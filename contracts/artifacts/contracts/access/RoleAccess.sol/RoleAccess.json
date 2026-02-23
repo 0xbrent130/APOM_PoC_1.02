@@ -1,0 +1,500 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "RoleAccess",
+  "sourceName": "contracts/access/RoleAccess.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "AlreadyExists",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "EscrowExpired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAddress",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAmount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidDeadline",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidPaymentToken",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidStatus",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotEscrowParty",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotFound",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ProductInactive",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TransferFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "Unauthorized",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "escrowId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "EscrowCancelled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "escrowId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "seller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "EscrowCompleted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "escrowId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "productId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "buyer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "seller",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "paymentToken",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "EscrowCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "escrowId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "EscrowDelivered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "escrowId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "raisedBy",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "EscrowDisputed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "escrowId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "payer",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "EscrowFunded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "escrowId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "sellerAmount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "buyerAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "EscrowResolved",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnerTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "productId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "externalId",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "acceptedToken",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "unitPrice",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProductCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "productId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "ProductOwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "productId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "metadataHash",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "acceptedToken",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "unitPrice",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        }
+      ],
+      "name": "ProductUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "enabled",
+          "type": "bool"
+        }
+      ],
+      "name": "RoleUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "ADMIN_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ARBITER_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "SELLER_MANAGER_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "hasRole",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "enabled",
+          "type": "bool"
+        }
+      ],
+      "name": "setRole",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50600080546001600160a01b0319163390811782558082527f50efbde2d46c37e9785f1791697f77e94bb7b701e19f1930a668820722d376946020526040808320805460ff19166001179055519091907f8934ce4adea8d9ce0d714d2c22b86790e41b7731c84b926fbbdc1d40ff6533c9908290a36040516001815233907fa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775907f5f0ecfd1ea5555d5b4b6140b49c92365beaf40d0a057dc34a9746990cd4ce8d49060200160405180910390a361047e806100ec6000396000f3fe608060405234801561001057600080fd5b506004361061007d5760003560e01c806375b238fc1161005b57806375b238fc146100f85780638da5cb5b1461011f57806391d148541461014a578063f2fde38b1461019357600080fd5b80634d104adf1461008257806355e99464146100bc5780636a951316146100e3575b600080fd5b6100a97fbb08418a67729a078f87bbc8d02a770929bb68f5bfdf134ae2ead6ed38e2f4ae81565b6040519081526020015b60405180910390f35b6100a97f2560ab6f140afee5747a211a622d03816964de9b22fcbd0828e0bd98f13a392d81565b6100f66100f13660046103b5565b6101a6565b005b6100a97fa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c2177581565b600054610132906001600160a01b031681565b6040516001600160a01b0390911681526020016100b3565b6101836101583660046103fa565b60009182526001602090815260408084206001600160a01b0393909316845291905290205460ff1690565b60405190151581526020016100b3565b6100f66101a1366004610426565b610262565b6000546001600160a01b031633146101d0576040516282b42960e81b815260040160405180910390fd5b6001600160a01b0382166101f75760405163e6c4247b60e01b815260040160405180910390fd5b60008381526001602090815260408083206001600160a01b03861680855290835292819020805460ff1916851515908117909155905190815285917f5f0ecfd1ea5555d5b4b6140b49c92365beaf40d0a057dc34a9746990cd4ce8d4910160405180910390a3505050565b6000546001600160a01b0316331461028c576040516282b42960e81b815260040160405180910390fd5b6001600160a01b0381166102b35760405163e6c4247b60e01b815260040160405180910390fd5b600080546001600160a01b038381166001600160a01b03198316811784558084527f50efbde2d46c37e9785f1791697f77e94bb7b701e19f1930a668820722d376946020526040808520805460ff1916600117905551919092169283917f8934ce4adea8d9ce0d714d2c22b86790e41b7731c84b926fbbdc1d40ff6533c99190a3604051600181526001600160a01b038316907fa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775907f5f0ecfd1ea5555d5b4b6140b49c92365beaf40d0a057dc34a9746990cd4ce8d49060200160405180910390a35050565b80356001600160a01b03811681146103b057600080fd5b919050565b6000806000606084860312156103ca57600080fd5b833592506103da60208501610399565b9150604084013580151581146103ef57600080fd5b809150509250925092565b6000806040838503121561040d57600080fd5b8235915061041d60208401610399565b90509250929050565b60006020828403121561043857600080fd5b61044182610399565b939250505056fea2646970667358221220486dd0587598c0c3417efab3f2e642965b486ce6a8a527bd10c0a4ca6901b68b64736f6c63430008180033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061007d5760003560e01c806375b238fc1161005b57806375b238fc146100f85780638da5cb5b1461011f57806391d148541461014a578063f2fde38b1461019357600080fd5b80634d104adf1461008257806355e99464146100bc5780636a951316146100e3575b600080fd5b6100a97fbb08418a67729a078f87bbc8d02a770929bb68f5bfdf134ae2ead6ed38e2f4ae81565b6040519081526020015b60405180910390f35b6100a97f2560ab6f140afee5747a211a622d03816964de9b22fcbd0828e0bd98f13a392d81565b6100f66100f13660046103b5565b6101a6565b005b6100a97fa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c2177581565b600054610132906001600160a01b031681565b6040516001600160a01b0390911681526020016100b3565b6101836101583660046103fa565b60009182526001602090815260408084206001600160a01b0393909316845291905290205460ff1690565b60405190151581526020016100b3565b6100f66101a1366004610426565b610262565b6000546001600160a01b031633146101d0576040516282b42960e81b815260040160405180910390fd5b6001600160a01b0382166101f75760405163e6c4247b60e01b815260040160405180910390fd5b60008381526001602090815260408083206001600160a01b03861680855290835292819020805460ff1916851515908117909155905190815285917f5f0ecfd1ea5555d5b4b6140b49c92365beaf40d0a057dc34a9746990cd4ce8d4910160405180910390a3505050565b6000546001600160a01b0316331461028c576040516282b42960e81b815260040160405180910390fd5b6001600160a01b0381166102b35760405163e6c4247b60e01b815260040160405180910390fd5b600080546001600160a01b038381166001600160a01b03198316811784558084527f50efbde2d46c37e9785f1791697f77e94bb7b701e19f1930a668820722d376946020526040808520805460ff1916600117905551919092169283917f8934ce4adea8d9ce0d714d2c22b86790e41b7731c84b926fbbdc1d40ff6533c99190a3604051600181526001600160a01b038316907fa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775907f5f0ecfd1ea5555d5b4b6140b49c92365beaf40d0a057dc34a9746990cd4ce8d49060200160405180910390a35050565b80356001600160a01b03811681146103b057600080fd5b919050565b6000806000606084860312156103ca57600080fd5b833592506103da60208501610399565b9150604084013580151581146103ef57600080fd5b809150509250925092565b6000806040838503121561040d57600080fd5b8235915061041d60208401610399565b90509250929050565b60006020828403121561043857600080fd5b61044182610399565b939250505056fea2646970667358221220486dd0587598c0c3417efab3f2e642965b486ce6a8a527bd10c0a4ca6901b68b64736f6c63430008180033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
