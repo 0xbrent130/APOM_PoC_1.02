@@ -12,12 +12,11 @@ import {
   Image,
   Rocket,
   Vote,
-  BarChart3,
   Zap,
   Shield,
   Globe,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const features = [
   {
@@ -93,21 +92,6 @@ const features = [
       "Token Voting",
       "Treasury Management",
       "Community Rewards",
-    ],
-  },
-  {
-    id: "analytics",
-    icon: BarChart3,
-    title: "Advanced Analytics",
-    description:
-      "Track your performance with comprehensive analytics and insights.",
-    gradient: "gradient-primary",
-    shadowClass: "shadow-primary",
-    features: [
-      "Portfolio Tracking",
-      "P&L Analysis",
-      "Market Data",
-      "Performance Metrics",
     ],
   },
 ];

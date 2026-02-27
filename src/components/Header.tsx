@@ -5,11 +5,12 @@ import { Link, useLocation } from "react-router-dom";
 import logo from "@/assets/logo.png";
 import { useAuthState } from "@/state/auth-state";
 
-
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
-  const { loginPrompt, dismissLoginPrompt } = useAuthState();
+  const { user, session, wallet, loginPrompt, dismissLoginPrompt, clearAuth, openLoginPrompt } = useAuthState();
+  const authStatusLabel = session && user ? `Signed in as ${user.displayName}` : "Signed out";
+  const walletStatusLabel = wallet ? `${wallet.address.slice(0, 6)}...${wallet.address.slice(-4)}` : "Disconnected";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -78,11 +79,46 @@ const Header = () => {
           </Link>
         </nav>
 
-        {/* Connect Wallet Button */}
+        {/* Session Actions */}
         <div className="flex items-center space-x-4">
-          <Button variant="wallet" size="lg" className="hidden md:flex">
+          <div className="hidden lg:flex items-center gap-2 text-xs">
+            <span className="rounded-full border border-border px-2 py-1 text-muted-foreground">
+              Auth: {authStatusLabel}
+            </span>
+            <span className="rounded-full border border-border px-2 py-1 text-muted-foreground">
+              Wallet: {walletStatusLabel}
+            </span>
+          </div>
+
+          {session ? (
+            <Button variant="outline" size="lg" className="hidden md:flex" onClick={clearAuth}>
+              Sign Out
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="lg"
+              className="hidden md:flex"
+              onClick={() => openLoginPrompt("Sign in to unlock protected actions.")}
+            >
+              Sign In
+            </Button>
+          )}
+
+          <Button
+            variant="wallet"
+            size="lg"
+            className="hidden md:flex"
+            onClick={() =>
+              openLoginPrompt(
+                session
+                  ? "Wallet connection will be enabled in the next delivery."
+                  : "Sign in before connecting your wallet.",
+              )
+            }
+          >
             <Wallet className="w-4 h-4" />
-            Connect Wallet
+            {wallet ? "Wallet Connected" : "Connect Wallet"}
           </Button>
 
           {/* Mobile Menu Button */}
@@ -156,9 +192,50 @@ const Header = () => {
             >
               Governance
             </Link>
-            <Button variant="wallet" size="lg" className="w-full mt-4">
+            <div className="rounded-lg border border-border p-3 text-sm text-muted-foreground space-y-1">
+              <p>Auth: {authStatusLabel}</p>
+              <p>Wallet: {walletStatusLabel}</p>
+            </div>
+            {session ? (
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full mt-4"
+                onClick={() => {
+                  clearAuth();
+                  setIsMenuOpen(false);
+                }}
+              >
+                Sign Out
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full mt-4"
+                onClick={() => {
+                  openLoginPrompt("Sign in to unlock protected actions.");
+                  setIsMenuOpen(false);
+                }}
+              >
+                Sign In
+              </Button>
+            )}
+            <Button
+              variant="wallet"
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                openLoginPrompt(
+                  session
+                    ? "Wallet connection will be enabled in the next delivery."
+                    : "Sign in before connecting your wallet.",
+                );
+                setIsMenuOpen(false);
+              }}
+            >
               <Wallet className="w-4 h-4" />
-              Connect Wallet
+              {wallet ? "Wallet Connected" : "Connect Wallet"}
             </Button>
           </nav>
         </div>

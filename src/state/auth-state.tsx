@@ -12,6 +12,15 @@ interface AuthSession {
   expiresAt: string;
 }
 
+interface AuthWallet {
+  id: string;
+  userId: string;
+  address: string;
+  chainId: number;
+  isPrimary: boolean;
+  linkedAt: string;
+}
+
 interface LoginPromptState {
   isOpen: boolean;
   message: string;
@@ -20,6 +29,7 @@ interface LoginPromptState {
 interface AuthState {
   user: AuthUser | null;
   session: AuthSession | null;
+  wallet: AuthWallet | null;
   loginPrompt: LoginPromptState;
 }
 
@@ -29,6 +39,7 @@ type AuthAction =
       payload: {
         user: AuthUser;
         session: AuthSession;
+        wallet?: AuthWallet | null;
       };
     }
   | { type: "CLEAR_AUTH" }
@@ -39,7 +50,7 @@ type AuthAction =
   | { type: "DISMISS_LOGIN_PROMPT" };
 
 interface AuthContextValue extends AuthState {
-  setAuth: (payload: { user: AuthUser; session: AuthSession }) => void;
+  setAuth: (payload: { user: AuthUser; session: AuthSession; wallet?: AuthWallet | null }) => void;
   clearAuth: () => void;
   openLoginPrompt: (message?: string) => void;
   dismissLoginPrompt: () => void;
@@ -50,6 +61,7 @@ const DEFAULT_LOGIN_MESSAGE = "Please log in to continue.";
 const initialState: AuthState = {
   user: null,
   session: null,
+  wallet: null,
   loginPrompt: {
     isOpen: false,
     message: DEFAULT_LOGIN_MESSAGE,
@@ -63,12 +75,14 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         ...state,
         user: action.payload.user,
         session: action.payload.session,
+        wallet: action.payload.wallet ?? null,
       };
     case "CLEAR_AUTH":
       return {
         ...state,
         user: null,
         session: null,
+        wallet: null,
       };
     case "OPEN_LOGIN_PROMPT":
       return {
@@ -96,7 +110,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  const setAuth = useCallback((payload: { user: AuthUser; session: AuthSession }) => {
+  const setAuth = useCallback((payload: { user: AuthUser; session: AuthSession; wallet?: AuthWallet | null }) => {
     dispatch({ type: "SET_AUTH", payload });
   }, []);
 
