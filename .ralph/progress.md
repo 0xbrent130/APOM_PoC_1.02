@@ -482,3 +482,43 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - Browser validation can run reliably with `VITE_API_BASE_URL='/api'` so Vite proxy handles API requests in local dev.
 ---
+## [2026-02-27 08:37:42 CST] - US-013: Productionize Launchpad page data and contribution actions
+Thread: 
+Run: 20260227-065441-78451 (iteration 5)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-5.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-5.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 0456038 feat(launchpad): add launchpad api and ui actions
+- Post-commit status: `clean`
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: DATABASE_URL='file:./dev-browser.db' AUTH_JWT_SECRET='dev-browser-secret' VITE_API_BASE_URL='/api' npm run dev -> PASS
+  - Command: dev-browser scripts on http://localhost:8081/launchpad (details fetch + blocked-state assertions) -> PASS
+- Files changed:
+  - server/app.js
+  - server/routes/launchpad.js
+  - src/contracts/index.ts
+  - src/contracts/launchpad.ts
+  - src/lib/launchpad-api.ts
+  - src/pages/Launchpad.tsx
+  - tests/launchpad-routes.test.js
+- What was implemented
+- Added backend launchpad endpoints for API overview (`GET /api/launchpad/overview`), project details (`GET /api/launchpad/projects/:projectId`), and contribution action (`POST /api/launchpad/projects/:projectId/contribute`).
+- Added deterministic contribution-blocking messages for upcoming/completed/cancelled/ended states and only allowed live eligible project contributions.
+- Implemented contribution writes to `LaunchContribution` and project raised/participant updates with transaction safety and refreshable state.
+- Added frontend launchpad contracts + API module and replaced static `/launchpad` page with API-backed rendering.
+- Implemented required component states: loading, no projects, contribution success, contribution failure.
+- Implemented view-details fetch flow that loads and displays recent contributions per selected project.
+- Added launchpad backend route tests covering overview, details flow, successful contribution + refreshed raised value, and deterministic blocked negative cases.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - The existing route productionization template (server normalize helpers + typed frontend contracts + query/mutation hooks) remains the fastest path for consistent behavior.
+  - Gotchas encountered
+  - Browser validation in local dev required `VITE_API_BASE_URL='/api'` so Vite proxy avoids credentialed cross-origin request failures.
+  - Useful context
+  - Header auth is currently prompt-only in UI; contribution success was validated via integration tests while browser validation confirmed launchpad API rendering and deterministic blocked state messaging.
+---
