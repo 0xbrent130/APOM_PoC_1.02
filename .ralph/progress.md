@@ -609,3 +609,35 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - Wallet linking requires both an authenticated email session and a connected injected wallet address to generate nonce + SIWE signature flow successfully.
 ---
+## [2026-02-27 09:30:54 CST] - US-016: Add backend automated test coverage for critical domains
+Thread: 37160
+Run: 20260227-065441-78451 (iteration 8)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-8.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-8.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 8f67c33 test(api): add critical domain integration coverage
+- Post-commit status: `clean`
+- Verification:
+  - Command: `node --test tests/critical-domains-integration.test.js` -> PASS
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run test` -> PASS
+  - Command: `npm run typecheck` -> PASS
+  - Command: `npm run build` -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - package.json
+  - package-lock.json
+  - tests/critical-domains-integration.test.js
+- What was implemented
+  - Installed `vitest` and `supertest` as dev dependencies.
+  - Added deterministic backend integration coverage for auth, customer, policy, statements, and governance mutation endpoints in `tests/critical-domains-integration.test.js`.
+  - Added positive authenticated mutation/state-transition checks and negative invalid payload/signature checks asserting DB state remains unchanged.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Existing backend tests follow isolated sqlite temp-db setup with explicit table bootstrap; matching that pattern keeps tests deterministic.
+  - Gotchas encountered
+  - Invalid SIWE signatures log noble-curve stack traces in route error handling even when API behavior is correct; tests should assert response and DB state, not console noise.
+  - Useful context
+  - `node --test tests/**/*.test.js` runs all backend integration tests and remains compatible with `supertest`-based suites.
+---
