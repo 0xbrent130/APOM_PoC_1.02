@@ -212,12 +212,14 @@ const NFTMarketplace = () => {
                 Discover, collect, and trade digital assets from gaming and art communities
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="nft" size="xl">
-                  Browse NFTs
+                <Button asChild variant="nft" size="xl">
+                  <a href="#featured-nfts">Browse NFTs</a>
                 </Button>
-                <Button variant="outline" size="xl">
-                  <Palette className="w-5 h-5" />
-                  Create NFT
+                <Button asChild variant="outline" size="xl">
+                  <a href="#top-collections">
+                    <Palette className="w-5 h-5" />
+                    Create NFT
+                  </a>
                 </Button>
               </div>
             </div>
@@ -292,7 +294,7 @@ const NFTMarketplace = () => {
               <Card className="gradient-card border-destructive/50">
                 <CardHeader>
                   <CardTitle>Unable to load marketplace data</CardTitle>
-                  <CardDescription>Could not fetch NFT collections and inventory from the backend.</CardDescription>
+                  <CardDescription>We could not load marketplace data right now.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button variant="outline" onClick={() => void overviewQuery.refetch()}>
@@ -304,7 +306,7 @@ const NFTMarketplace = () => {
               <Card className="gradient-card border-border/50">
                 <CardHeader>
                   <CardTitle>Empty inventory</CardTitle>
-                  <CardDescription>No NFTs are available right now. Check back after new listings are published.</CardDescription>
+                  <CardDescription>No NFTs are available right now. Check back for new listings.</CardDescription>
                 </CardHeader>
               </Card>
             ) : (
@@ -344,7 +346,9 @@ const NFTMarketplace = () => {
                   </Card>
                 </div>
 
-                <h2 className="text-3xl font-bold text-center mb-12">Featured NFTs</h2>
+                <h2 id="featured-nfts" className="text-3xl font-bold text-center mb-12 scroll-mt-24">
+                  Featured NFTs
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
                   {overviewQuery.data?.assets.map((asset) => {
                     const isOwned = purchasedAssetId === asset.id && purchaseState === "complete";
@@ -462,7 +466,9 @@ const NFTMarketplace = () => {
                   })}
                 </div>
 
-                <h2 className="text-3xl font-bold text-center mb-12">Top Collections</h2>
+                <h2 id="top-collections" className="text-3xl font-bold text-center mb-12 scroll-mt-24">
+                  Top Collections
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {overviewQuery.data?.collections.map((collection) => (
                     <Card key={collection.id} className="gradient-card border-border/50 hover:shadow-nft transition-smooth">

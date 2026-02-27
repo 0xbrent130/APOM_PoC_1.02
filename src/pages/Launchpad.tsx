@@ -146,13 +146,17 @@ const Launchpad = () => {
                 Discover and invest in the next generation of gaming and DeFi projects before they launch
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="hero" size="xl">
-                  <Rocket className="w-5 h-5" />
-                  Explore Projects
+                <Button asChild variant="hero" size="xl">
+                  <a href="#active-projects">
+                    <Rocket className="w-5 h-5" />
+                    Explore Projects
+                  </a>
                 </Button>
-                <Button variant="outline" size="xl">
-                  <Target className="w-5 h-5" />
-                  Submit Project
+                <Button asChild variant="outline" size="xl">
+                  <a href="#launchpad-process">
+                    <Target className="w-5 h-5" />
+                    Submit Project
+                  </a>
                 </Button>
               </div>
             </div>
@@ -206,7 +210,7 @@ const Launchpad = () => {
               <Card className="gradient-card border-destructive/50">
                 <CardHeader>
                   <CardTitle>Unable to load launchpad projects</CardTitle>
-                  <CardDescription>Could not fetch launchpad projects from the backend.</CardDescription>
+                  <CardDescription>We could not load launchpad projects right now.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button variant="outline" onClick={() => void overviewQuery.refetch()}>
@@ -218,7 +222,7 @@ const Launchpad = () => {
               <Card className="gradient-card border-border/50">
                 <CardHeader>
                   <CardTitle>No projects available</CardTitle>
-                  <CardDescription>Projects will appear here once they are published.</CardDescription>
+                  <CardDescription>Projects will appear here when they are available.</CardDescription>
                 </CardHeader>
               </Card>
             ) : (
@@ -258,7 +262,9 @@ const Launchpad = () => {
                   </Card>
                 </div>
 
-                <h2 className="text-3xl font-bold text-center mb-12">Active & Upcoming Projects</h2>
+                <h2 id="active-projects" className="text-3xl font-bold text-center mb-12 scroll-mt-24">
+                  Active & Upcoming Projects
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {overviewQuery.data?.projects.map((project) => {
                     const isContributing =
@@ -412,7 +418,7 @@ const Launchpad = () => {
           </div>
         </section>
 
-        <section className="py-16 px-4 bg-secondary/20">
+        <section id="launchpad-process" className="py-16 px-4 bg-secondary/20 scroll-mt-24">
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

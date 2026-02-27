@@ -211,13 +211,17 @@ const Governance = () => {
                 Shape the future of APOM Solutions through decentralized governance and community voting
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="hero" size="xl">
-                  <Vote className="w-5 h-5" />
-                  Vote Now
+                <Button asChild variant="hero" size="xl">
+                  <a href="#governance-proposals">
+                    <Vote className="w-5 h-5" />
+                    Vote Now
+                  </a>
                 </Button>
-                <Button variant="outline" size="xl">
-                  <FileText className="w-5 h-5" />
-                  Create Proposal
+                <Button asChild variant="outline" size="xl">
+                  <a href="#governance-process">
+                    <FileText className="w-5 h-5" />
+                    Create Proposal
+                  </a>
                 </Button>
               </div>
             </div>
@@ -281,7 +285,7 @@ const Governance = () => {
               <Card className="gradient-card border-destructive/50">
                 <CardHeader>
                   <CardTitle>Unable to load governance proposals</CardTitle>
-                  <CardDescription>Could not fetch governance data from the backend.</CardDescription>
+                  <CardDescription>We could not load governance data right now.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button variant="outline" onClick={() => void overviewQuery.refetch()}>
@@ -333,7 +337,9 @@ const Governance = () => {
                   </Card>
                 </div>
 
-                <h2 className="text-3xl font-bold text-center mb-12">Governance Proposals</h2>
+                <h2 id="governance-proposals" className="text-3xl font-bold text-center mb-12 scroll-mt-24">
+                  Governance Proposals
+                </h2>
                 <div className="space-y-6">
                   {overviewQuery.data?.proposals.map((proposal) => {
                     const totalVotes = proposal.totalVotes;
@@ -445,7 +451,7 @@ const Governance = () => {
           </div>
         </section>
 
-        <section className="py-16 px-4 bg-secondary/20">
+        <section id="governance-process" className="py-16 px-4 bg-secondary/20 scroll-mt-24">
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12">How Governance Works</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

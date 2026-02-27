@@ -8,7 +8,7 @@ import type {
 
 export function loginWithEmail(payload: { email: string; password: string }) {
   return apiClient.post<EmailAuthResponse, { email: string; password: string }>(
-    "/api/auth/login",
+    "/auth/login",
     payload,
   );
 }
@@ -19,18 +19,18 @@ export function registerWithEmail(payload: {
   displayName: string;
 }) {
   return apiClient.post<EmailAuthResponse, { email: string; password: string; displayName: string }>(
-    "/api/auth/register",
+    "/auth/register",
     payload,
   );
 }
 
 export function logoutAuthSession() {
-  return apiClient.post<{ message: string }>("/api/auth/logout");
+  return apiClient.post<{ message: string }>("/auth/logout");
 }
 
 export function requestWalletNonce(payload: { address: string; chainId: number }) {
   return apiClient.post<WalletNonceResponse, { address: string; chainId: number }>(
-    "/api/auth/wallet/nonce",
+    "/auth/wallet/nonce",
     payload,
   );
 }
@@ -41,7 +41,7 @@ export function verifyWalletSession(payload: {
   nonceToken: string;
 }) {
   return apiClient.post<WalletVerifyResponse, { message: string; signature: string; nonceToken: string }>(
-    "/api/auth/wallet/verify",
+    "/auth/wallet/verify",
     payload,
   );
 }
@@ -52,7 +52,7 @@ export function linkWalletToSession(payload: {
   nonceToken: string;
 }) {
   return apiClient.post<WalletLinkResponse, { message: string; signature: string; nonceToken: string }>(
-    "/api/auth/link/wallet",
+    "/auth/link/wallet",
     payload,
   );
 }

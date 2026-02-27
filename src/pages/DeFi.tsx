@@ -158,13 +158,17 @@ const DeFi = () => {
                 Trade, stake, and earn with advanced DeFi protocols designed for the gaming ecosystem
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="defi" size="xl">
-                  <ArrowUpDown className="w-5 h-5" />
-                  Start Trading
+                <Button asChild variant="defi" size="xl">
+                  <a href="#top-liquidity-pools">
+                    <ArrowUpDown className="w-5 h-5" />
+                    Start Trading
+                  </a>
                 </Button>
-                <Button variant="outline" size="xl">
-                  <Droplets className="w-5 h-5" />
-                  Add Liquidity
+                <Button asChild variant="outline" size="xl">
+                  <a href="#top-liquidity-pools">
+                    <Droplets className="w-5 h-5" />
+                    Add Liquidity
+                  </a>
                 </Button>
               </div>
             </div>
@@ -222,7 +226,7 @@ const DeFi = () => {
               <Card className="gradient-card border-destructive/50">
                 <CardHeader>
                   <CardTitle>Unable to load DeFi pools</CardTitle>
-                  <CardDescription>Could not fetch DeFi data from the backend.</CardDescription>
+                  <CardDescription>We could not load DeFi data right now.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button variant="outline" onClick={() => void overviewQuery.refetch()}>
@@ -235,7 +239,7 @@ const DeFi = () => {
                 <CardHeader>
                   <CardTitle>No pools available</CardTitle>
                   <CardDescription>
-                    Liquidity pools will appear here once they are created by the backend.
+                    Liquidity pools will appear here when they are available.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -276,7 +280,9 @@ const DeFi = () => {
                   </Card>
                 </div>
 
-                <h2 className="text-3xl font-bold text-center mb-12">Top Liquidity Pools</h2>
+                <h2 id="top-liquidity-pools" className="text-3xl font-bold text-center mb-12 scroll-mt-24">
+                  Top Liquidity Pools
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {overviewQuery.data?.pools.map((pool) => {
                     const isLiquidityPending =

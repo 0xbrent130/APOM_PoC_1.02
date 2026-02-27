@@ -23,10 +23,6 @@ import {
 } from "@/lib/auth-api";
 import { useAuthState } from "@/state/auth-state";
 
-function shortenWallet(address: string) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
-
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "register">("signin");
@@ -58,15 +54,6 @@ const Header = () => {
   const linkedWalletConnected = Boolean(
     wallet && isConnected && address && wallet.address.toLowerCase() === address.toLowerCase(),
   );
-
-  const authStatusLabel = session && user ? `Signed in as ${user.displayName}` : "Signed out";
-  const walletStatusLabel = wallet
-    ? linkedWalletConnected
-      ? shortenWallet(wallet.address)
-      : `${shortenWallet(wallet.address)} (disconnected)`
-    : isConnected && address
-      ? `${shortenWallet(address)} (unlinked)`
-      : "Disconnected";
 
   const resetFormError = () => {
     setFormError(null);
@@ -302,11 +289,6 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center space-x-4">
-          <div className="hidden md:flex items-center gap-2 text-xs">
-            <span className="rounded-full border border-border px-2 py-1 text-muted-foreground">Auth: {authStatusLabel}</span>
-            <span className="rounded-full border border-border px-2 py-1 text-muted-foreground">Wallet: {walletStatusLabel}</span>
-          </div>
-
           {renderSessionButtons()}
 
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -353,10 +335,6 @@ const Header = () => {
             >
               Governance
             </Link>
-            <div className="rounded-lg border border-border p-3 text-sm text-muted-foreground space-y-1">
-              <p>Auth: {authStatusLabel}</p>
-              <p>Wallet: {walletStatusLabel}</p>
-            </div>
             {renderSessionButtons(true)}
           </nav>
         </div>

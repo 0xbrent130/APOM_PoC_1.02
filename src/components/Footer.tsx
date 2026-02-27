@@ -1,4 +1,3 @@
-import { ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import logo from "@/assets/logo.png";
 
@@ -32,57 +31,32 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Developers</h3>
+            <h3 className="font-semibold mb-4">Resources</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a
-                  href="https://docs.github.com/en/rest"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-foreground transition-smooth flex items-center"
-                >
-                  API Documentation <ExternalLink className="w-3 h-3 ml-1" />
-                </a>
+                <Link to="/launchpad" className="hover:text-foreground transition-smooth">
+                  Project Discovery
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://vite.dev/guide/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-foreground transition-smooth flex items-center"
-                >
-                  SDK & Tools <ExternalLink className="w-3 h-3 ml-1" />
-                </a>
+                <Link to="/defi" className="hover:text-foreground transition-smooth">
+                  DeFi Overview
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://ethereum.org/en/developers/docs/smart-contracts/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-foreground transition-smooth flex items-center"
-                >
-                  Smart Contracts <ExternalLink className="w-3 h-3 ml-1" />
-                </a>
+                <Link to="/nft-marketplace" className="hover:text-foreground transition-smooth">
+                  NFT Marketplace Guide
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://hackenproof.com/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-foreground transition-smooth"
-                >
-                  Bug Bounty
-                </a>
+                <Link to="/governance" className="hover:text-foreground transition-smooth">
+                  Governance Process
+                </Link>
               </li>
               <li>
-                <a
-                  href="https://github.com/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-foreground transition-smooth"
-                >
-                  GitHub
-                </a>
+                <Link to="/gaming" className="hover:text-foreground transition-smooth">
+                  Gaming Hub
+                </Link>
               </li>
             </ul>
           </div>
@@ -105,13 +79,13 @@ const Footer = () => {
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/governance" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">
-              Privacy Policy
+              Governance
             </Link>
             <Link to="/launchpad" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">
-              Terms of Service
+              Launchpad
             </Link>
             <Link to="/defi" className="text-sm text-muted-foreground hover:text-foreground transition-smooth">
-              Security
+              DeFi
             </Link>
           </div>
         </div>

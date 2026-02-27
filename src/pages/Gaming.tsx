@@ -72,13 +72,17 @@ const Gaming = () => {
                 Play to earn, own your assets, and compete in the ultimate blockchain gaming ecosystem
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="gaming" size="xl">
-                  <Play className="w-5 h-5" />
-                  Start Playing
+                <Button asChild variant="gaming" size="xl">
+                  <a href="#featured-games">
+                    <Play className="w-5 h-5" />
+                    Start Playing
+                  </a>
                 </Button>
-                <Button variant="outline" size="xl">
-                  <Trophy className="w-5 h-5" />
-                  Leaderboards
+                <Button asChild variant="outline" size="xl">
+                  <a href="#gaming-features">
+                    <Trophy className="w-5 h-5" />
+                    Leaderboards
+                  </a>
                 </Button>
               </div>
             </div>
@@ -86,7 +90,7 @@ const Gaming = () => {
         </section>
 
         {/* Featured Games */}
-        <section className="py-16 px-4">
+        <section id="featured-games" className="py-16 px-4 scroll-mt-24">
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12">Featured Games</h2>
             {overviewQuery.isLoading ? (
@@ -112,7 +116,7 @@ const Gaming = () => {
               <Card className="gradient-card border-destructive/50">
                 <CardHeader>
                   <CardTitle>Unable to load games</CardTitle>
-                  <CardDescription>Could not fetch gaming data from the backend.</CardDescription>
+                  <CardDescription>We could not load gaming data right now.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button variant="outline" onClick={() => void overviewQuery.refetch()}>
@@ -124,7 +128,7 @@ const Gaming = () => {
               <Card className="gradient-card border-border/50">
                 <CardHeader>
                   <CardTitle>No games available</CardTitle>
-                  <CardDescription>New games will appear here once published by the backend.</CardDescription>
+                  <CardDescription>New games will appear here when they become available.</CardDescription>
                 </CardHeader>
               </Card>
             ) : (
@@ -229,7 +233,7 @@ const Gaming = () => {
         </section>
 
         {/* Gaming Features */}
-        <section className="py-16 px-4 bg-secondary/20">
+        <section id="gaming-features" className="py-16 px-4 bg-secondary/20 scroll-mt-24">
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12">Gaming Features</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
