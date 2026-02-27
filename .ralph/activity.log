@@ -1,0 +1,12 @@
+# Activity Log
+
+## Run Summary
+
+## Events
+
+[2026-02-26 20:51:21] ITERATION 1 start (mode=build story=US-001)
+[2026-02-26 20:51:52] Using .agents/ralph/log-activity.sh; root helper missing
+[2026-02-26 20:52:35] Implemented US-001 code changes: scripts, CI workflow, typed contract baseline, test scaffold
+[2026-02-26 20:53:19] Applied lint/typecheck unblock fixes required for quality gates
+[2026-02-26 20:53:48] Verification complete: lint/test/typecheck/build and dev startup smoke check
+[2026-02-26 20:54:36] Updated progress log with US-001 implementation and verification details
