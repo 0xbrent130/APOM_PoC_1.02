@@ -13,6 +13,7 @@ const statementsRouter = require("./routes/statements.js")
 const centreRouter = require("./routes/centre.js")
 const gamingRouter = require("./routes/gaming.js")
 const defiRouter = require("./routes/defi.js")
+const nftMarketplaceRouter = require("./routes/nftMarketplace.js")
 
 async function defaultReadinessCheck() {
     await getPrismaClient().$queryRawUnsafe("SELECT 1")
@@ -39,6 +40,7 @@ function createApp(options = {}) {
     serverApp.use("/api/centre",centreRouter)
     serverApp.use("/api/gaming",gamingRouter)
     serverApp.use("/api/defi",defiRouter)
+    serverApp.use("/api/nft-marketplace",nftMarketplaceRouter)
 
     serverApp.get("/",(req,res)=>{
         res.send("Hello")

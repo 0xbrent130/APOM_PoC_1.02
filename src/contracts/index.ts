@@ -17,3 +17,15 @@ export type {
   PlayGameRequest,
   PlayGameResponse,
 } from "./gaming";
+export type {
+  BuyNftRequest,
+  BuyNftResponse,
+  ListNftRequest,
+  ListNftResponse,
+  NftActionState,
+  NftAssetStatus,
+  NftAssetSummary,
+  NftCollectionSummary,
+  NftMarketplaceOverview,
+  NftMarketplaceStats,
+} from "./nft-marketplace";
