@@ -1,6 +1,7 @@
 # Activity Log
 
 ## Run Summary
+- 2026-02-27 09:31:27 | run=20260227-065441-78451 | iter=8 | mode=build | story=US-016 | duration=264s | status=success
 - 2026-02-27 09:27:01 | run=20260227-065441-78451 | iter=7 | mode=build | story=US-015 | duration=741s | status=success
 - 2026-02-27 09:14:38 | run=20260227-065441-78451 | iter=6 | mode=build | story=US-014 | duration=2170s | status=success
 - 2026-02-27 08:38:25 | run=20260227-065441-78451 | iter=5 | mode=build | story=US-013 | duration=545s | status=success
@@ -122,3 +123,8 @@
 [2026-02-27 09:30:10] US-016 iteration 8: verification complete (lint/test/typecheck/build all passing)
 [2026-02-27 09:30:38] US-016 iteration 8 start marker: backend critical-domain test coverage implementation
 [2026-02-27 09:31:07] US-016 iteration 8: appended progress entry to .ralph/progress.md
+[2026-02-27 09:31:27] ITERATION 8 end (duration=264s)
+[2026-02-27 09:31:30] ITERATION 9 start (mode=build story=US-017)
+[2026-02-27 09:31:56] US-017: context loaded; auditing frontend test files and toolchain
+[2026-02-27 09:36:36] US-017: added vitest frontend route tests and playwright smoke suite scaffolding
+[2026-02-27 10:04:23] US-017: verification completed (frontend, e2e, lint, test, typecheck, build)

@@ -11,6 +11,7 @@ interface AccessOptions {
 export function useProtectedAction() {
   const { session, wallet, openLoginPrompt } = useAuthState();
   const { address, isConnected } = useAccount();
+  const skipWalletCheck = import.meta.env.VITE_E2E_SKIP_WALLET_CHECK === "1";
 
   const hasActiveLinkedWallet = Boolean(
     wallet &&
@@ -27,6 +28,10 @@ export function useProtectedAction() {
       }
 
       if (!walletRequired) {
+        return true;
+      }
+
+      if (skipWalletCheck) {
         return true;
       }
 
@@ -47,7 +52,7 @@ export function useProtectedAction() {
 
       return true;
     },
-    [hasActiveLinkedWallet, openLoginPrompt, session, wallet],
+    [hasActiveLinkedWallet, openLoginPrompt, session, skipWalletCheck, wallet],
   );
 
   return {
