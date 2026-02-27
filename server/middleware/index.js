@@ -16,69 +16,22 @@ const callPalmContract = require('./palm.js');
 const callRoninContract = require('./ronin.js');
 const callXDaiContract = require('./xdai.js');
 
-const EthContract = (() => {
-  callEthContract();
-});
-
-const BscContract = (() => {
-  callBscContract();
-});
-
-const ArbitrumContract = (() => {
-  callArbitrumContract();
-});
-
-const AvalancheContract = (() => {
-  callAvalancheContract();
-});
-
-const FantomContract = (() => {
-  callFantomContract();
-});
-
-const HarmonyContract = (() => {
-  callHarmonyContract();
-});
-
-const HecoContract = (() => {
-  callHecoContract();
-});
-
-const KlayContract = (() => {
-  callKlayContract();
-});
-
-const MaticContract = (() => {
-  callMaticContract();
-});
-
-const MoonbeamContract = (() => {
-  callMoonbeamContract();
-});
-
-const PolygonContract = (() => {
-  callPolygonContract();
-})();
-
-const HashedContract = (() => {
-  callHashedContract();
-});
-
-const OptimismContract = (() => {
-  callOptimismContract();
-});
-
-const PalmContract = (() => {
-  callPalmContract();
-});
-
-const RoninContract = (() => {
-  callRoninContract();
-});
-
-const XDaiContract = (() => {
-  callXDaiContract();
-});
+const EthContract = callEthContract;
+const BscContract = callBscContract;
+const ArbitrumContract = callArbitrumContract;
+const AvalancheContract = callAvalancheContract;
+const FantomContract = callFantomContract;
+const HarmonyContract = callHarmonyContract;
+const HecoContract = callHecoContract;
+const KlayContract = callKlayContract;
+const MaticContract = callMaticContract;
+const MoonbeamContract = callMoonbeamContract;
+const PolygonContract = callPolygonContract;
+const HashedContract = callHashedContract;
+const OptimismContract = callOptimismContract;
+const PalmContract = callPalmContract;
+const RoninContract = callRoninContract;
+const XDaiContract = callXDaiContract;
 // Export all blockchain contract middleware functions
 module.exports = {
   EthContract,

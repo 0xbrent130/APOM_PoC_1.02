@@ -1,21 +1,31 @@
 const axios = require('axios');
-const errorHandler = require('./errorHandler.js');
+const { parseRemotePayload, buildRpcFailure } = require('./errorHandler.js');
 
-const callContract = async (url, networkName) => {
-    axios
-    .post(
-        url,
-        { headers: { "x-secret-header": "secret" } }
-    )
-    .then((response) => {
-        if (networkName === "Polygon Mainnet") {
-            errorHandler(response.data);
-            return response.data;
-        }
-    })
-    .catch((err) => {
-        return false;
-    });
+const callContract = async (url, networkName, httpClient = axios) => {
+  try {
+    const response = await httpClient.post(
+      url,
+      {},
+      { headers: { "x-secret-header": "secret" } }
+    );
+
+    const parsedResponse = parseRemotePayload(response?.data);
+
+    if (parsedResponse.statusCode !== 200) {
+      return parsedResponse;
+    }
+
+    return {
+      statusCode: 200,
+      body: {
+        status: true,
+        network: networkName,
+        data: parsedResponse.body.data,
+      },
+    };
+  } catch (_error) {
+    return buildRpcFailure(`Remote RPC failure from ${networkName}.`);
+  }
 };
 
 module.exports = callContract;

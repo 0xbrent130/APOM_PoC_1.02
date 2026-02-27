@@ -1,7 +1,6 @@
 const express = require("express")
 const router = express.Router()
 const db = require("../database.js")
-const {PolygonContract} = require("../middleware/index.js")
 const {generateID} = require("../utils.js")
 
 router.post("/create",(req,res)=>{
