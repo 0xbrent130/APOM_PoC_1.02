@@ -522,3 +522,43 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - Header auth is currently prompt-only in UI; contribution success was validated via integration tests while browser validation confirmed launchpad API rendering and deterministic blocked state messaging.
 ---
+## [2026-02-27 09:13:47 CST] - US-014: Productionize Governance page proposal and vote flows
+Thread: 56804
+Run: 20260227-065441-78451 (iteration 6)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-6.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-6.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 3b69796 feat(governance): productionize vote and discuss flows
+- Post-commit status: `clean`
+- Verification:
+  - Command: `node --test tests/governance-routes.test.js` -> PASS
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run test` -> PASS
+  - Command: `npm run typecheck` -> PASS
+  - Command: `npm run build` -> PASS
+  - Command: `DATABASE_URL="file:<tmp>/dev-smoke.db" npm run dev` (smoke startup) -> PASS
+  - Command: `node <playwright governance verification script>` -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - server/app.js
+  - server/routes/governance.js
+  - src/contracts/governance.ts
+  - src/contracts/index.ts
+  - src/lib/governance-api.ts
+  - src/pages/Governance.tsx
+  - tests/governance-routes.test.js
+- What was implemented
+  - Added production governance backend route (`/api/governance`) with API-backed overview data, authenticated vote and discuss mutations, proposal status/action normalization, and immutable voting rejection via 409 for ended/non-active proposals.
+  - Added governance backend integration tests for overview, active vote success, immutable ended vote rejection, and auth gating for vote/discuss.
+  - Replaced static `/governance` page data with query-driven rendering and full state handling: loading, empty, error, vote success/failure, discussion success/failure, and pending/ended disabled action messaging.
+  - Added typed governance frontend contracts and API module used by the Governance page mutations/queries.
+  - Performed browser verification of Governance UI behavior and captured screenshot at `.ralph/runs/us014-governance-browser.png`.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Existing route implementations (DeFi/NFT/Launchpad) provide a consistent pattern for auth-gated mutation endpoints, action-state derivation, and 409 conflict handling.
+  - Gotchas encountered
+  - `npm run dev` startup checks require runtime `DATABASE_URL`; smoke validation should include an explicit temporary SQLite URL.
+  - Useful context
+  - In this shell model, `dev-browser` helper server did not remain reachable after launch; direct Playwright automation with mocked API responses is a practical fallback for required frontend verification.
+---
