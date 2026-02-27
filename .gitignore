@@ -29,3 +29,8 @@ captures/
 # Ralph artifacts
 .ralph/
 .ralph*
+*.ralph
+
+# Prisma local database artifacts
+prisma/dev.db
+prisma/dev.db-journal
