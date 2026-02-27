@@ -231,3 +231,48 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705
   - Useful context
   - Non-customer backend routes had no frontend callsites yet, so response normalization did not require client updates in this iteration.
 ---
+## [2026-02-26 21:28:57 CST] - US-007: Implement hybrid authentication (email/password + wallet SIWE)
+Thread: 
+Run: 20260226-205121-19705 (iteration 7)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-7.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-7.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 0ccea24 feat(auth): add hybrid email and SIWE auth flows
+- Post-commit status: `clean`
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: DATABASE_URL='file:/tmp/apom-dev-us007.db' PORT=8100 npm run server -> PASS
+- Files changed:
+  - package.json
+  - package-lock.json
+  - server/app.js
+  - server/auth/session.js
+  - server/middleware/auth.js
+  - server/routes/auth.js
+  - server/routes/customer.js
+  - server/routes/agent.js
+  - server/routes/policy.js
+  - server/routes/statements.js
+  - server/routes/centre.js
+  - tests/auth-routes.test.js
+  - tests/admin-routes.test.js
+  - .ralph/activity.log
+- What was implemented
+  - Installed SIWE/auth dependencies (`siwe`, `viem`, `jsonwebtoken`, `cookie-parser`).
+  - Added `/api/auth` endpoints for email register/login/logout, wallet nonce, wallet verify, and authenticated wallet linking.
+  - Implemented session-backed auth middleware with JWT+cookie and Prisma `Session` checks.
+  - Protected backend mutation endpoints with `requireAuth` + role/session checks.
+  - Added SIWE integration tests for success, invalid signature, nonce replay, and account linking.
+  - Updated existing mutation-route tests to authenticate before calling protected endpoints.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Route-level middleware keeps legacy routers mostly untouched while adding centralized auth checks.
+  - Gotchas encountered
+  - SIWE invalid signatures can throw deep crypto errors; tests should assert response behavior, not internal exception text.
+  - Useful context
+  - Current dev workflow needs `DATABASE_URL`; running backend smoke checks should set temp DB URL and non-conflicting `PORT`.
+---
