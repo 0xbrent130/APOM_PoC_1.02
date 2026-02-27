@@ -124,3 +124,38 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705
   - Useful context
   - `npm run dev` can fail with `EADDRINUSE` on port 8000; setting `PORT` avoids false-negative startup checks during iterative verification.
 ---
+## [2026-02-26 21:09:53 CST] - US-004: Implement fail-fast startup, env validation, and health endpoints
+Thread: 
+Run: 20260226-205121-19705 (iteration 4)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-4.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-4.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 3709215 feat(startup): add fail-fast env and health checks
+- Post-commit status: `clean`
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: DATABASE_URL='' PORT=18002 npm run server -> PASS
+- Files changed:
+  - server/app.js
+  - server/config.js
+  - server/prismaBootstrap.js
+  - server/prismaClient.js
+  - tests/prisma-bootstrap.test.js
+  - tests/startup-health.test.js
+- What was implemented
+- Added runtime env schema validation with `zod` requiring `DATABASE_URL` and validating runtime config before startup.
+- Added `/health/live` and `/health/ready` endpoints, with readiness tied to a lightweight Prisma DB query.
+- Removed fallback DB URL defaults so missing credentials fail fast, and added structured JSON startup error logging with non-zero process exit.
+- Added endpoint and startup-failure tests covering ready/not-ready health responses and missing-credentials exit behavior.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Injecting readiness checks into app creation makes health endpoints deterministic and testable without real DB/network dependencies.
+  - Gotchas encountered
+  - The activity logger helper is available via `ralph log "message"` on PATH, not as a repo-local executable path.
+  - Useful context
+  - Failing config quickly at startup prevents Prisma bootstrap work and avoids partial listen states.
+---
