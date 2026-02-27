@@ -15,7 +15,7 @@ import {
 import type { DefiActionState, DefiIntentResponse } from "@/contracts/defi";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { useAuthState } from "@/state/auth-state";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 
 type DefiAction = "add_liquidity" | "stake";
 
@@ -64,7 +64,7 @@ function formatPoolType(type: string) {
 const DeFi = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { session, wallet, openLoginPrompt } = useAuthState();
+  const { ensureAccess } = useProtectedAction();
   const [amountByPool, setAmountByPool] = useState<Record<string, string>>({});
   const [mutationFeedback, setMutationFeedback] = useState<{
     type: "success" | "error";
@@ -110,25 +110,17 @@ const DeFi = () => {
   }, [overviewQuery.data]);
 
   const submitIntent = (poolId: string, action: DefiAction, actionState: DefiActionState) => {
+    if (
+      !ensureAccess({
+        authMessage: "Sign in and connect your wallet to submit DeFi intents.",
+        walletMessage: "Connect your linked wallet to submit DeFi intents.",
+        walletRequired: true,
+      })
+    ) {
+      return;
+    }
+
     setMutationFeedback(null);
-
-    if (!session) {
-      setMutationFeedback({
-        type: "error",
-        message: "Authentication required before submitting DeFi intents.",
-      });
-      openLoginPrompt("Sign in and connect your wallet to submit DeFi intents.");
-      return;
-    }
-
-    if (!wallet) {
-      setMutationFeedback({
-        type: "error",
-        message: "Wallet connection is required before submitting DeFi intents.",
-      });
-      openLoginPrompt("Connect your wallet to submit DeFi intents.");
-      return;
-    }
 
     if (!actionState.enabled) {
       setMutationFeedback({

@@ -11,6 +11,7 @@ import { buyNft, getNftMarketplaceOverview, listNft } from "@/lib/nft-marketplac
 import type { NftAssetSummary } from "@/contracts";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuthState } from "@/state/auth-state";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 
 function formatEth(value: number) {
   return `${value.toFixed(2)} ETH`;
@@ -78,6 +79,7 @@ function recalculateStats(assets: NftAssetSummary[], totalCollections: number, t
 const NFTMarketplace = () => {
   const queryClient = useQueryClient();
   const { wallet } = useAuthState();
+  const { ensureAccess } = useProtectedAction();
   const [purchaseState, setPurchaseState] = useState<"idle" | "pending" | "failed" | "complete">("idle");
   const [purchaseMessage, setPurchaseMessage] = useState<string>("");
   const [purchasedAssetId, setPurchasedAssetId] = useState<string | null>(null);
@@ -146,6 +148,16 @@ const NFTMarketplace = () => {
   });
 
   const submitBuy = (assetId: string) => {
+    if (
+      !ensureAccess({
+        authMessage: "Sign in and connect your wallet to buy NFTs.",
+        walletMessage: "Connect your linked wallet to buy NFTs.",
+        walletRequired: true,
+      })
+    ) {
+      return;
+    }
+
     buyMutation.mutate({
       assetId,
       buyerWallet: wallet?.address,
@@ -153,6 +165,16 @@ const NFTMarketplace = () => {
   };
 
   const submitList = (asset: NftAssetSummary) => {
+    if (
+      !ensureAccess({
+        authMessage: "Sign in and connect your wallet to list NFTs.",
+        walletMessage: "Connect your linked wallet to list NFTs.",
+        walletRequired: true,
+      })
+    ) {
+      return;
+    }
+
     const draft = listDraftByAsset[asset.id] ?? {
       price: "",
       sellerWallet: wallet?.address ?? asset.sellerWallet,

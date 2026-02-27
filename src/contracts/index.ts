@@ -1,5 +1,14 @@
 export type { ApiFailure, ApiResponse, ApiSuccess } from "./api";
 export type {
+  AuthSession,
+  AuthUser,
+  AuthWallet,
+  EmailAuthResponse,
+  WalletLinkResponse,
+  WalletNonceResponse,
+  WalletVerifyResponse,
+} from "./auth";
+export type {
   DefiIntentRequest,
   DefiIntentResponse,
   DefiOverview,

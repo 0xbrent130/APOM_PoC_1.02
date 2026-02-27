@@ -10,6 +10,7 @@ import { getGamingOverview, playGame } from "@/lib/gaming-api";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthState } from "@/state/auth-state";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 
 function formatPlayers(value: number) {
   return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value);
@@ -35,6 +36,7 @@ const Gaming = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { wallet } = useAuthState();
+  const { ensureAccess } = useProtectedAction();
   const overviewQuery = useApiQuery({
     queryKey: ["gaming", "overview"],
     request: getGamingOverview,
@@ -191,7 +193,19 @@ const Gaming = () => {
                           variant={game.action.enabled ? "gaming" : "secondary"}
                           className="w-full mt-4"
                           disabled={!game.action.enabled || playMutation.isPending}
-                          onClick={() => playMutation.mutate(game.slug)}
+                          onClick={() => {
+                            if (
+                              !ensureAccess({
+                                authMessage: "Sign in and connect your wallet to join games.",
+                                walletMessage: "Connect your linked wallet to join games.",
+                                walletRequired: true,
+                              })
+                            ) {
+                              return;
+                            }
+
+                            playMutation.mutate(game.slug);
+                          }}
                         >
                           {playMutation.isPending && playMutation.variables === game.slug ? (
                             <>

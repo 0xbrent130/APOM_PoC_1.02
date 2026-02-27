@@ -14,7 +14,7 @@ import {
 } from "@/lib/launchpad-api";
 import type { ContributeToProjectResponse, LaunchpadProjectSummary } from "@/contracts";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuthState } from "@/state/auth-state";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 
 function formatCompact(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -50,7 +50,7 @@ function formatStatus(status: LaunchpadProjectSummary["status"]) {
 
 const Launchpad = () => {
   const queryClient = useQueryClient();
-  const { session, openLoginPrompt } = useAuthState();
+  const { ensureAccess } = useProtectedAction();
   const [amountByProject, setAmountByProject] = useState<Record<string, string>>({});
   const [contributionState, setContributionState] = useState<{
     type: "success" | "failure";
@@ -96,16 +96,17 @@ const Launchpad = () => {
   });
 
   const submitContribution = (project: LaunchpadProjectSummary) => {
-    setContributionState(null);
-
-    if (!session) {
-      setContributionState({
-        type: "failure",
-        message: "Authentication required before contributing to projects.",
-      });
-      openLoginPrompt("Sign in to contribute to launchpad projects.");
+    if (
+      !ensureAccess({
+        authMessage: "Sign in and connect your wallet to contribute to launchpad projects.",
+        walletMessage: "Connect your linked wallet to contribute to launchpad projects.",
+        walletRequired: true,
+      })
+    ) {
       return;
     }
+
+    setContributionState(null);
 
     if (!project.contributionAction.enabled) {
       setContributionState({

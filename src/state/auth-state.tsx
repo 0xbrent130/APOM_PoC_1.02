@@ -1,29 +1,10 @@
 import { createContext, useCallback, useContext, useMemo, useReducer, type ReactNode } from "react";
-
-interface AuthUser {
-  id: string;
-  email: string;
-  displayName: string;
-}
-
-interface AuthSession {
-  id: string;
-  role: string;
-  expiresAt: string;
-}
-
-interface AuthWallet {
-  id: string;
-  userId: string;
-  address: string;
-  chainId: number;
-  isPrimary: boolean;
-  linkedAt: string;
-}
+import type { AuthSession, AuthUser, AuthWallet } from "@/contracts/auth";
 
 interface LoginPromptState {
   isOpen: boolean;
   message: string;
+  requiresWallet: boolean;
 }
 
 interface AuthState {
@@ -45,14 +26,16 @@ type AuthAction =
   | { type: "CLEAR_AUTH" }
   | {
       type: "OPEN_LOGIN_PROMPT";
-      payload: { message: string };
+      payload: { message: string; requiresWallet: boolean };
     }
+  | { type: "SET_WALLET"; payload: { wallet: AuthWallet | null } }
   | { type: "DISMISS_LOGIN_PROMPT" };
 
 interface AuthContextValue extends AuthState {
   setAuth: (payload: { user: AuthUser; session: AuthSession; wallet?: AuthWallet | null }) => void;
+  setWallet: (wallet: AuthWallet | null) => void;
   clearAuth: () => void;
-  openLoginPrompt: (message?: string) => void;
+  openLoginPrompt: (message?: string, options?: { requiresWallet?: boolean }) => void;
   dismissLoginPrompt: () => void;
 }
 
@@ -65,6 +48,7 @@ const initialState: AuthState = {
   loginPrompt: {
     isOpen: false,
     message: DEFAULT_LOGIN_MESSAGE,
+    requiresWallet: false,
   },
 };
 
@@ -90,7 +74,13 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
         loginPrompt: {
           isOpen: true,
           message: action.payload.message,
+          requiresWallet: action.payload.requiresWallet,
         },
+      };
+    case "SET_WALLET":
+      return {
+        ...state,
+        wallet: action.payload.wallet,
       };
     case "DISMISS_LOGIN_PROMPT":
       return {
@@ -118,10 +108,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "CLEAR_AUTH" });
   }, []);
 
-  const openLoginPrompt = useCallback((message?: string) => {
+  const setWallet = useCallback((wallet: AuthWallet | null) => {
+    dispatch({ type: "SET_WALLET", payload: { wallet } });
+  }, []);
+
+  const openLoginPrompt = useCallback((message?: string, options?: { requiresWallet?: boolean }) => {
     dispatch({
       type: "OPEN_LOGIN_PROMPT",
-      payload: { message: message ?? DEFAULT_LOGIN_MESSAGE },
+      payload: {
+        message: message ?? DEFAULT_LOGIN_MESSAGE,
+        requiresWallet: options?.requiresWallet ?? false,
+      },
     });
   }, []);
 
@@ -144,11 +141,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       ...state,
       setAuth,
+      setWallet,
       clearAuth,
       openLoginPrompt,
       dismissLoginPrompt,
     }),
-    [state, setAuth, clearAuth, openLoginPrompt, dismissLoginPrompt],
+    [state, setAuth, setWallet, clearAuth, openLoginPrompt, dismissLoginPrompt],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { useApiQuery } from "@/hooks/use-api-query";
-import { useAuthState } from "@/state/auth-state";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   getGovernanceOverview,
@@ -85,7 +85,7 @@ interface DiscussionVariables {
 
 const Governance = () => {
   const queryClient = useQueryClient();
-  const { session, openLoginPrompt } = useAuthState();
+  const { ensureAccess } = useProtectedAction();
   const [voteState, setVoteState] = useState<{
     type: "success" | "failure";
     message: string;
@@ -142,17 +142,17 @@ const Governance = () => {
   });
 
   const submitVote = (proposal: GovernanceProposalSummary, support: boolean) => {
-    setVoteState(null);
-
-    if (!session) {
-      setVoteState({
-        type: "failure",
-        message: "Authentication required before voting.",
-        proposalId: proposal.id,
-      });
-      openLoginPrompt("Sign in to vote on governance proposals.");
+    if (
+      !ensureAccess({
+        authMessage: "Sign in and connect your wallet to vote on governance proposals.",
+        walletMessage: "Connect your linked wallet to vote on governance proposals.",
+        walletRequired: true,
+      })
+    ) {
       return;
     }
+
+    setVoteState(null);
 
     if (!proposal.actions.vote.enabled) {
       setVoteState({
@@ -170,17 +170,17 @@ const Governance = () => {
   };
 
   const submitDiscussion = (proposal: GovernanceProposalSummary) => {
-    setDiscussionState(null);
-
-    if (!session) {
-      setDiscussionState({
-        type: "failure",
-        message: "Authentication required before discussion actions.",
-        proposalId: proposal.id,
-      });
-      openLoginPrompt("Sign in to discuss governance proposals.");
+    if (
+      !ensureAccess({
+        authMessage: "Sign in and connect your wallet to discuss governance proposals.",
+        walletMessage: "Connect your linked wallet to discuss governance proposals.",
+        walletRequired: true,
+      })
+    ) {
       return;
     }
+
+    setDiscussionState(null);
 
     if (!proposal.actions.discuss.enabled) {
       setDiscussionState({
