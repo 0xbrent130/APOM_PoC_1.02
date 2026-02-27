@@ -194,3 +194,40 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705
   - Useful context
   - Existing lint baseline has warnings but no errors; quality gate passes when warnings remain unchanged.
 ---
+## [2026-02-27 21:22:20 UTC] - US-006: Refactor agent, policy, statements, and centre routes and fix query defects
+Thread: 
+Run: 20260226-205121-19705 (iteration 6)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-6.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-6.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 4b29b3e refactor(api): migrate admin routes to prisma
+- Post-commit status: `clean`
+- Verification:
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run test` -> PASS
+  - Command: `npm run typecheck` -> PASS
+  - Command: `npm run build` -> PASS
+  - Command: `npm run dev` -> FAIL (missing `DATABASE_URL` in env)
+  - Command: `DATABASE_URL=file:/tmp/apom-dev.sqlite PORT=19001 npm run server` -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - server/routes/agent.js
+  - server/routes/centre.js
+  - server/routes/policy.js
+  - server/routes/statements.js
+  - tests/admin-routes.test.js
+- What was implemented
+  - Replaced legacy SQL handlers in `agent`, `policy`, `statements`, and `centre` routers with Prisma CRUD operations.
+  - Added schema validation and normalized response semantics (`success/data` and typed errors) across these routers.
+  - Fixed invalid update syntax defects by implementing safe Prisma updates for statement status changes and centre amount increments.
+  - Added explicit 404 handling for missing update targets (agent update and statement status mutation) to prevent phantom writes.
+  - Added integration tests validating status change behavior and nonexistent-record update negative cases.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Customer router envelope and validation helpers are good templates for legacy route migrations.
+  - Gotchas encountered
+  - `npm run dev` can fail-fast on missing runtime env (`DATABASE_URL`), so smoke checks need explicit env when not sourced.
+  - Useful context
+  - Non-customer backend routes had no frontend callsites yet, so response normalization did not require client updates in this iteration.
+---
