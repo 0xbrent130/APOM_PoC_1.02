@@ -1,59 +1,58 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { 
-  Play, 
-  Trophy, 
-  Coins, 
-  Users, 
-  Star,
-  Gamepad2,
-  Sword,
-  Shield,
-  Zap
-} from "lucide-react";
+import { Play, Trophy, Coins, Shield, Zap, Loader2 } from "lucide-react";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { useApiMutation } from "@/hooks/use-api-mutation";
+import { getGamingOverview, playGame } from "@/lib/gaming-api";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { useAuthState } from "@/state/auth-state";
 
-const gamingData = [
-  {
-    id: 1,
-    title: "CyberRealm Chronicles",
-    genre: "RPG",
-    players: "1.2K",
-    rewards: "250 APOM/day",
-    image: "🏰",
-    status: "Live"
-  },
-  {
-    id: 2,
-    title: "Quantum Racers",
-    genre: "Racing",
-    players: "856",
-    rewards: "180 APOM/day",
-    image: "🏎️",
-    status: "Live"
-  },
-  {
-    id: 3,
-    title: "DeFi Defenders",
-    genre: "Strategy",
-    players: "2.1K",
-    rewards: "320 APOM/day",
-    image: "🛡️",
-    status: "Live"
-  },
-  {
-    id: 4,
-    title: "MetaVerse Miners",
-    genre: "Simulation",
-    players: "Coming Soon",
-    rewards: "TBA",
-    image: "⛏️",
-    status: "Coming Soon"
+function formatPlayers(value: number) {
+  return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(value);
+}
+
+function formatStatus(status: "live" | "coming_soon" | "maintenance" | "archived") {
+  if (status === "live") {
+    return "Live";
   }
-];
+
+  if (status === "coming_soon") {
+    return "Coming Soon";
+  }
+
+  if (status === "maintenance") {
+    return "Maintenance";
+  }
+
+  return "Archived";
+}
 
 const Gaming = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { wallet } = useAuthState();
+  const overviewQuery = useApiQuery({
+    queryKey: ["gaming", "overview"],
+    request: getGamingOverview,
+  });
+  const playMutation = useApiMutation({
+    mutationFn: (slug: string) =>
+      playGame(slug, {
+        wallet: wallet?.address,
+      }),
+    onSuccess: (result) => {
+      toast({
+        title: "Participation recorded",
+        description: `You joined ${result.game.title}.`,
+      });
+      void queryClient.invalidateQueries({ queryKey: ["gaming", "overview"] });
+    },
+  });
+
   return (
     <div className="min-h-screen relative z-10">
       <Header />
@@ -88,42 +87,130 @@ const Gaming = () => {
         <section className="py-16 px-4">
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold text-center mb-12">Featured Games</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {gamingData.map((game) => (
-                <Card key={game.id} className="gradient-card border-border/50 hover:shadow-gaming transition-smooth">
-                  <CardHeader>
-                    <div className="text-4xl mb-2">{game.image}</div>
-                    <CardTitle className="text-lg">{game.title}</CardTitle>
-                    <CardDescription>{game.genre}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Players:</span>
-                        <span className="text-gaming">{game.players}</span>
+            {overviewQuery.isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <Card key={index} className="gradient-card border-border/50">
+                    <CardHeader>
+                      <Skeleton className="h-7 w-2/3" />
+                      <Skeleton className="h-4 w-1/3" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-2/3" />
+                        <Skeleton className="h-10 w-full" />
                       </div>
-                      <div className="flex justify-between">
-                        <span>Rewards:</span>
-                        <span className="text-accent">{game.rewards}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Status:</span>
-                        <span className={game.status === "Live" ? "text-accent" : "text-muted-foreground"}>
-                          {game.status}
-                        </span>
-                      </div>
-                    </div>
-                    <Button 
-                      variant={game.status === "Live" ? "gaming" : "secondary"} 
-                      className="w-full mt-4"
-                      disabled={game.status !== "Live"}
-                    >
-                      {game.status === "Live" ? "Play Now" : "Coming Soon"}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : overviewQuery.isError ? (
+              <Card className="gradient-card border-destructive/50">
+                <CardHeader>
+                  <CardTitle>Unable to load games</CardTitle>
+                  <CardDescription>Could not fetch gaming data from the backend.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button variant="outline" onClick={() => void overviewQuery.refetch()}>
+                    Retry
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : overviewQuery.data && overviewQuery.data.games.length === 0 ? (
+              <Card className="gradient-card border-border/50">
+                <CardHeader>
+                  <CardTitle>No games available</CardTitle>
+                  <CardDescription>New games will appear here once published by the backend.</CardDescription>
+                </CardHeader>
+              </Card>
+            ) : (
+              <div className="space-y-8">
+                {overviewQuery.data ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <Card className="gradient-card text-center">
+                      <CardHeader>
+                        <CardTitle className="text-2xl gradient-gaming bg-clip-text text-transparent">
+                          {overviewQuery.data.stats.totalGames}
+                        </CardTitle>
+                        <CardDescription>Total Games</CardDescription>
+                      </CardHeader>
+                    </Card>
+                    <Card className="gradient-card text-center">
+                      <CardHeader>
+                        <CardTitle className="text-2xl gradient-accent bg-clip-text text-transparent">
+                          {overviewQuery.data.stats.liveGames}
+                        </CardTitle>
+                        <CardDescription>Live Games</CardDescription>
+                      </CardHeader>
+                    </Card>
+                    <Card className="gradient-card text-center">
+                      <CardHeader>
+                        <CardTitle className="text-2xl gradient-primary bg-clip-text text-transparent">
+                          {formatPlayers(overviewQuery.data.stats.totalActivePlayers)}
+                        </CardTitle>
+                        <CardDescription>Total Players</CardDescription>
+                      </CardHeader>
+                    </Card>
+                    <Card className="gradient-card text-center">
+                      <CardHeader>
+                        <CardTitle className="text-2xl gradient-gaming bg-clip-text text-transparent">
+                          {overviewQuery.data.stats.rewardPrograms}
+                        </CardTitle>
+                        <CardDescription>Reward Programs</CardDescription>
+                      </CardHeader>
+                    </Card>
+                  </div>
+                ) : null}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {overviewQuery.data?.games.map((game) => (
+                    <Card key={game.id} className="gradient-card border-border/50 hover:shadow-gaming transition-smooth">
+                      <CardHeader>
+                        <CardTitle className="text-lg">{game.title}</CardTitle>
+                        <CardDescription>{game.genre}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span>Players:</span>
+                            <span className="text-gaming">{formatPlayers(game.activePlayers)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Rewards:</span>
+                            <span className="text-accent">{game.rewardRate}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Status:</span>
+                            <span className={game.status === "live" ? "text-accent" : "text-muted-foreground"}>
+                              {formatStatus(game.status)}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          variant={game.action.enabled ? "gaming" : "secondary"}
+                          className="w-full mt-4"
+                          disabled={!game.action.enabled || playMutation.isPending}
+                          onClick={() => playMutation.mutate(game.slug)}
+                        >
+                          {playMutation.isPending && playMutation.variables === game.slug ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Joining...
+                            </>
+                          ) : (
+                            game.action.label
+                          )}
+                        </Button>
+                        {!game.action.enabled && game.action.disabledReason ? (
+                          <p className="mt-2 text-xs text-muted-foreground">{game.action.disabledReason}</p>
+                        ) : null}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 

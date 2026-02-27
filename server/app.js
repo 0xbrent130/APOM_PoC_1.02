@@ -11,6 +11,7 @@ const agentRouter = require("./routes/agent.js")
 const policyRouter = require("./routes/policy.js")
 const statementsRouter = require("./routes/statements.js")
 const centreRouter = require("./routes/centre.js")
+const gamingRouter = require("./routes/gaming.js")
 
 async function defaultReadinessCheck() {
     await getPrismaClient().$queryRawUnsafe("SELECT 1")
@@ -35,6 +36,7 @@ function createApp(options = {}) {
     serverApp.use("/api/policy",policyRouter)
     serverApp.use("/api/statements",statementsRouter)
     serverApp.use("/api/centre",centreRouter)
+    serverApp.use("/api/gaming",gamingRouter)
 
     serverApp.get("/",(req,res)=>{
         res.send("Hello")
