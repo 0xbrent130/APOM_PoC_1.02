@@ -1,6 +1,6 @@
 const { promisify } = require("node:util");
 const { execFile } = require("node:child_process");
-const { prisma, resolvePrismaSchemaPath } = require("./prismaClient.js");
+const { getPrismaClient, resolvePrismaSchemaPath } = require("./prismaClient.js");
 
 const execFileAsync = promisify(execFile);
 
@@ -12,10 +12,7 @@ async function deployPrismaMigrations(run = execFileAsync) {
       "npx",
       ["prisma", "migrate", "deploy", "--schema", schemaPath],
       {
-        env: {
-          ...process.env,
-          DATABASE_URL: process.env.DATABASE_URL || "file:./dev.db",
-        },
+        env: process.env,
       }
     );
   } catch (error) {
@@ -26,6 +23,7 @@ async function deployPrismaMigrations(run = execFileAsync) {
 
 async function bootstrapPrisma() {
   await deployPrismaMigrations();
+  const prisma = getPrismaClient();
   await prisma.$connect();
 }
 

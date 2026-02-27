@@ -1,6 +1,7 @@
 # Activity Log
 
 ## Run Summary
+- 2026-02-26 21:05:44 | run=20260226-205121-19705 | iter=3 | mode=build | story=US-003 | duration=444s | status=success
 - 2026-02-26 20:58:18 | run=20260226-205121-19705 | iter=2 | mode=build | story=US-002 | duration=201s | status=success
 - 2026-02-26 20:54:55 | run=20260226-205121-19705 | iter=1 | mode=build | story=US-001 | duration=214s | status=success
 
@@ -24,3 +25,8 @@
 [2026-02-26 21:02:08] US-003 major code changes: added Prisma schema, bootstrap, migration, and startup fail-fast path
 [2026-02-26 21:03:49] US-003 verification complete: prisma deploy/generate, lint, test, typecheck, build, and dev/server smoke checks
 [2026-02-26 21:05:18] US-003 progress entry appended to .ralph/progress.md
+[2026-02-26 21:05:44] ITERATION 3 end (duration=444s)
+[2026-02-26 21:05:46] ITERATION 4 start (mode=build story=US-004)
+[2026-02-26 21:06:15] US-004: audited existing startup path; preparing env validation and health endpoint changes
+[2026-02-26 21:08:10] US-004 major code changes: added runtime env validation, startup structured errors, and /health live+ready endpoints with DB readiness check plus tests
+[2026-02-26 21:08:38] US-004 verification complete: lint/test/typecheck/build passed; startup missing DATABASE_URL exits non-zero with structured JSON log

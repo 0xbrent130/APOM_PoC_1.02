@@ -10,6 +10,21 @@ const { deployPrismaMigrations } = require("../server/prismaBootstrap.js");
 const { startServer } = require("../server/app.js");
 const execFileAsync = promisify(execFile);
 
+const originalDatabaseUrl = process.env.DATABASE_URL;
+
+test.before(() => {
+  process.env.DATABASE_URL = process.env.DATABASE_URL || "file:./test.db";
+});
+
+test.after(() => {
+  if (originalDatabaseUrl === undefined) {
+    delete process.env.DATABASE_URL;
+    return;
+  }
+
+  process.env.DATABASE_URL = originalDatabaseUrl;
+});
+
 test("prisma deploy failure returns explicit startup error", async () => {
   const failingRunner = async () => {
     const error = new Error("Process failed");
