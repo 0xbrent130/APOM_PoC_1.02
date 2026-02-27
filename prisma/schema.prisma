@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum GameStatus {
+  LIVE
+  UPCOMING
+  MAINTENANCE
+  ARCHIVED
+}
+
+enum PoolType {
+  GAMING
+  STABLE
+  YIELD
+  RWA
+}
+
+enum PoolStatus {
+  ACTIVE
+  PAUSED
+  RETIRED
+}
+
+enum AssetStatus {
+  LISTED
+  SOLD
+  DELISTED
+}
+
+enum ProjectStatus {
+  UPCOMING
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ProposalStatus {
+  DRAFT
+  ACTIVE
+  PASSED
+  REJECTED
+  EXECUTED
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  passwordHash   String
+  displayName    String
+  walletAccounts WalletAccount[]
+  sessions       Session[]
+  positions      DefiPosition[]
+  votes          GovernanceVote[]
+  contributions  LaunchContribution[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model WalletAccount {
+  id        String   @id @default(cuid())
+  userId    String
+  address   String
+  chainId   Int
+  isPrimary Boolean  @default(false)
+  linkedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([address, chainId])
+  @@index([userId])
+}
+
+model Session {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Game {
+  id             String              @id @default(cuid())
+  slug           String              @unique
+  title          String
+  genre          String
+  status         GameStatus
+  rewardRate     String
+  activePlayers  Int                 @default(0)
+  updatedAt      DateTime            @updatedAt
+  participations GameParticipation[]
+}
+
+model GameParticipation {
+  id          String   @id @default(cuid())
+  gameId      String
+  userId      String?
+  wallet      String?
+  action      String
+  occurredAt  DateTime @default(now())
+  metadata    Json?
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, occurredAt])
+  @@index([userId, occurredAt])
+}
+
+model DefiPool {
+  id          String         @id @default(cuid())
+  pair        String         @unique
+  type        PoolType
+  tvl         Decimal
+  apy         Decimal
+  volume24h   Decimal
+  status      PoolStatus
+  updatedAt   DateTime       @updatedAt
+  positions   DefiPosition[]
+}
+
+model DefiPosition {
+  id          String    @id @default(cuid())
+  poolId      String
+  userId      String
+  amount      Decimal
+  action      String
+  createdAt   DateTime  @default(now())
+  pool        DefiPool  @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([poolId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model NftCollection {
+  id          String      @id @default(cuid())
+  name        String
+  category    String
+  floorPrice  Decimal
+  volume      Decimal
+  items       Int
+  updatedAt   DateTime    @updatedAt
+  assets      NftAsset[]
+
+  @@unique([name, category])
+}
+
+model NftAsset {
+  id            String         @id @default(cuid())
+  collectionId  String
+  tokenId       String
+  name          String
+  rarity        String
+  sellerWallet  String
+  status        AssetStatus
+  price         Decimal
+  updatedAt     DateTime       @updatedAt
+  collection    NftCollection  @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  listings      NftListing[]
+
+  @@unique([collectionId, tokenId])
+  @@index([status, updatedAt])
+}
+
+model NftListing {
+  id          String    @id @default(cuid())
+  assetId      String
+  buyerWallet String?
+  sellerWallet String
+  price       Decimal
+  status      AssetStatus
+  listedAt    DateTime  @default(now())
+  purchasedAt DateTime?
+  asset       NftAsset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId, listedAt])
+}
+
+model LaunchProject {
+  id            String               @id @default(cuid())
+  name          String
+  projectType   String
+  status        ProjectStatus
+  raised        Decimal
+  target        Decimal
+  participants  Int                  @default(0)
+  deadline      DateTime
+  updatedAt     DateTime             @updatedAt
+  contributions LaunchContribution[]
+
+  @@unique([name, deadline])
+}
+
+model LaunchContribution {
+  id          String        @id @default(cuid())
+  projectId   String
+  userId      String
+  amount      Decimal
+  createdAt   DateTime      @default(now())
+  project     LaunchProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model GovernanceProposal {
+  id            String           @id @default(cuid())
+  title         String
+  description   String
+  status        ProposalStatus
+  votesFor      BigInt           @default(0)
+  votesAgainst  BigInt           @default(0)
+  quorum        BigInt
+  endsAt        DateTime
+  updatedAt     DateTime         @updatedAt
+  votes         GovernanceVote[]
+}
+
+model GovernanceVote {
+  id           String              @id @default(cuid())
+  proposalId   String
+  userId       String
+  voteWeight   BigInt
+  support      Boolean
+  createdAt    DateTime            @default(now())
+  proposal     GovernanceProposal  @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  user         User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([proposalId, userId])
+  @@index([proposalId, createdAt])
+}

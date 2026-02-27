@@ -2,6 +2,7 @@ require("dotenv").config()
 const express = require("express")
 const app = express()
 const cors = require("cors")
+const { bootstrapPrisma } = require("./prismaBootstrap.js")
 const customerRouter = require("./routes/customer.js")
 const agentRouter = require("./routes/agent.js")
 const policyRouter = require("./routes/policy.js")
@@ -36,6 +37,32 @@ app.post("/api/contact",(req,res)=>{
 })
 
 
-app.listen(PORT, () => {
-    console.log(`Server Started on port ${PORT}`);
-})
+async function startServer(options = {}) {
+    const bootstrap = options.bootstrap || bootstrapPrisma
+    const serverApp = options.app || app
+    const port = options.port || PORT
+
+    await bootstrap()
+
+    return new Promise((resolve) => {
+        const server = serverApp.listen(port, () => {
+            console.log(`Server Started on port ${port}`);
+            resolve(server)
+        })
+    })
+}
+
+async function main() {
+    try {
+        await startServer()
+    } catch (error) {
+        console.error(`[startup] ${error.message}`)
+        process.exit(1)
+    }
+}
+
+if (require.main === module) {
+    main()
+}
+
+module.exports = { app, startServer, main }
