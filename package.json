@@ -6,6 +6,8 @@
     "dev-front": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "test": "node --test tests/**/*.test.js",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
     "preview": "vite preview",
     "server": "node server/app.js",
     "dev": "concurrently -n \"FRONTEND,backend\" -c \"blue,green\" \"npm run dev-front\" \"npm run server\"",
