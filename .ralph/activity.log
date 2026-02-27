@@ -1,6 +1,7 @@
 # Activity Log
 
 ## Run Summary
+- 2026-02-26 21:16:44 | run=20260226-205121-19705 | iter=5 | mode=build | story=US-005 | duration=323s | status=success
 - 2026-02-26 21:11:19 | run=20260226-205121-19705 | iter=4 | mode=build | story=US-004 | duration=333s | status=success
 - 2026-02-26 21:05:44 | run=20260226-205121-19705 | iter=3 | mode=build | story=US-003 | duration=444s | status=success
 - 2026-02-26 20:58:18 | run=20260226-205121-19705 | iter=2 | mode=build | story=US-002 | duration=201s | status=success
@@ -38,3 +39,8 @@
 [2026-02-26 21:14:25] Implemented US-005 code changes: Prisma legacy models/migration, customer route refactor with validation and safe error envelopes, and customer route integration tests
 [2026-02-26 21:15:23] US-005 verification complete: lint/test/typecheck/build passed; runtime server boot confirmed on PORT=8011
 [2026-02-26 21:16:22] US-005 progress entry appended to .ralph/progress.md
+[2026-02-26 21:16:44] ITERATION 5 end (duration=323s)
+[2026-02-26 21:16:46] ITERATION 6 start (mode=build story=US-006)
+[2026-02-26 21:17:45] Start US-006 iteration 6: route migration audit complete; implementing Prisma refactors for agent/policy/statements/centre
+[2026-02-26 21:19:34] US-006 major code changes: migrated agent/policy/statements/centre routes to Prisma with validation and added admin route regression tests
+[2026-02-26 21:20:42] US-006 verification complete: lint/test/typecheck/build passed; dev workflow smoke-checked with DATABASE_URL override
