@@ -276,3 +276,47 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705
   - Useful context
   - Current dev workflow needs `DATABASE_URL`; running backend smoke checks should set temp DB URL and non-conflicting `PORT`.
 ---
+## [2026-02-27 00:45:55 CST] - US-008: Create frontend API layer and shared typed state handling
+Thread: 
+Run: 20260226-205121-19705 (iteration 8)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-8.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-8.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 3b7fb2a feat(api): add frontend client and typed auth state
+- Post-commit status: `clean`
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: DATABASE_URL='file:./prisma/dev.db' PORT=8001 npm run server -> PASS
+  - Command: VITE_API_BASE_URL='/api' VITE_DEV_API_PROXY_TARGET='http://localhost:8001' npm run dev-front -> PASS
+  - Command: cd .codex/skills/dev-browser && npx tsx (browser script invoking window.__apomApiClient.post('/auth/logout')) -> PASS
+- Files changed:
+  - src/config/api.ts
+  - src/lib/api-client.ts
+  - src/hooks/use-api-query.ts
+  - src/hooks/use-api-mutation.ts
+  - src/state/auth-state.tsx
+  - src/App.tsx
+  - src/components/Header.tsx
+  - src/vite-env.d.ts
+  - vite.config.ts
+  - .ralph/activity.log
+  - .ralph/progress.md
+- What was implemented
+  - Added centralized API client with unified typed error parsing, transient retry policy, and consistent success envelope handling.
+  - Added environment-based API base URL resolution for development/staging/production, plus dev proxy support for `/api` routing.
+  - Added shared typed auth state provider for session + login prompt state, including URL query sync for login-required prompts.
+  - Added reusable `useApiQuery` and `useApiMutation` wrappers that normalize API errors and support user-safe toast messaging.
+  - Wired global 401 (`UNAUTHORIZED`) handling to clear stale auth state and redirect to `/?login=required` with visible login prompt banner.
+  - Verified in browser that a protected call returning 401 triggered safe toast text and login prompt redirect flow.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Registering API side-effects once in app bootstrap keeps auth reset and toast behavior consistent across all route pages.
+  - Gotchas encountered
+  - Cross-origin cookie auth in local dev needs same-origin proxying (or stricter backend CORS) to avoid browser-level network failures.
+  - Useful context
+  - Dev-only exposure of `window.__apomApiClient` enabled deterministic browser verification without adding permanent UI test controls.
+---
