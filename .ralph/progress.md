@@ -355,3 +355,46 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - Route scope in `src/App.tsx` already matched the PRD six-route contract; only link hygiene/state visibility needed updates.
 ---
+## [2026-02-27 07:06:00 CST] - US-010: Productionize Gaming page data and actions
+Thread: 
+Run: 20260227-065441-78451 (iteration 2)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-2.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 5953d08 feat(gaming): productionize gaming data actions
+- Post-commit status: `clean`
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: DATABASE_URL="file:./prisma/dev.db" VITE_API_BASE_URL=/api npm run dev -> PASS
+  - Command: dev-browser script against http://localhost:8081/gaming -> PASS
+- Files changed:
+  - server/app.js
+  - server/routes/gaming.js
+  - src/contracts/index.ts
+  - src/contracts/gaming.ts
+  - src/lib/gaming-api.ts
+  - src/pages/Gaming.tsx
+  - tests/gaming-routes.test.js
+  - .ralph/activity.log
+  - .ralph/progress.md
+- What was implemented
+  - Added backend gaming endpoints: `GET /api/gaming/overview` to return game list + computed player/reward stats and `POST /api/gaming/games/:slug/play` to execute real Play Now participation mutations.
+  - Enforced backend-driven action states so only `LIVE` games are playable; `UPCOMING` games return disabled reason (`Game not live yet`) and do not mutate participation data.
+  - Reworked `/gaming` page to consume backend data and support all required states: loading skeleton, empty data message, API error with retry, and success list.
+  - Wired primary game actions to real backend mutations with success feedback and query invalidation.
+  - Added route tests that cover overview payload, live participation recording, and coming-soon no-mutation negative path.
+  - Verified frontend behavior in browser automation and captured screenshot at `.codex/skills/dev-browser/tmp/us010-gaming.png`.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Route-specific API helpers + typed contracts keep frontend query/mutation wiring concise and safe.
+  - Pushing action enablement logic to backend prevents UI/backend drift on playable state.
+  - Gotchas encountered
+  - Local dev frontend requests need `VITE_API_BASE_URL=/api` to use Vite proxy; direct cross-origin requests with credentials can fail under wildcard CORS.
+  - Running `npm run dev` with `DATABASE_URL="file:./prisma/dev.db"` can create local DB artifacts that should stay out of commits.
+  - Useful context
+  - Browser validation was run via the `dev-browser` skill and confirmed live action + disabled upcoming reason behavior on `/gaming`.
+---
