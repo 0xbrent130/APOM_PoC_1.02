@@ -159,3 +159,38 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705
   - Useful context
   - Failing config quickly at startup prevents Prisma bootstrap work and avoids partial listen states.
 ---
+## [2026-02-26 21:16:05 CST] - US-005: Refactor customer routes to Prisma with validation and safe errors
+Thread: 54671
+Run: 20260226-205121-19705 (iteration 5)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-5.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-5.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: bca0a47 refactor(api): migrate customer routes to prisma
+- Post-commit status: `clean`
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: PORT=8011 DATABASE_URL='file:./dev-runtime-check.db' npm run server -> PASS
+- Files changed:
+  - prisma/schema.prisma
+  - prisma/migrations/20260227032000_customer_routes_prisma/migration.sql
+  - server/routes/customer.js
+  - tests/customer-routes.test.js
+  - .ralph/activity.log
+- What was implemented
+  - Replaced all customer route string-concatenated SQL with Prisma model queries and transactions for signup/login/update/policies/agents/statements/buy.
+  - Added zod request validation and SQL-injection pattern rejection for email/password with explicit `400 INVALID_INPUT` responses.
+  - Standardized response envelopes to `{ success, data }` and `{ success: false, error: { code, message } }` with route-level typed error codes.
+  - Added Prisma schema coverage and migration for legacy `customer` domain tables required by customer endpoints.
+  - Added integration tests for successful unique-email signup (`201`) and SQL-injection rejection with database state integrity checks.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Legacy domain tables can be represented in Prisma via `@@map` while keeping modern models intact.
+  - Gotchas encountered
+  - Shared legacy `generateID` relied on `md4` and failed on current OpenSSL; route-local secure ID generation avoided runtime breakage.
+  - Useful context
+  - Existing lint baseline has warnings but no errors; quality gate passes when warnings remain unchanged.
+---
