@@ -320,3 +320,38 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705
   - Useful context
   - Dev-only exposure of `window.__apomApiClient` enabled deterministic browser verification without adding permanent UI test controls.
 ---
+## [2026-02-27 06:58:18 CST] - US-009: Finalize shared layout behavior and route integrity
+Thread: 58126
+Run: 20260227-065441-78451 (iteration 1)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-1.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-1.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: ed2f2c4 fix(layout): replace dead links and expose state\n\nUpdate shared layout navigation integrity for US-009 by:\n- Replacing footer placeholder links with valid internal/external destinations\n- Keeping footer/top nav links aligned to existing production routes\n- Showing auth/wallet state chips from md+ breakpoints in header\n\nReference: US-009
+- Post-commit status: `clean`
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: npm run dev -- --host 127.0.0.1 --port 4173 -> FAIL (backend startup requires DATABASE_URL; frontend still launched)
+  - Command: npm run dev-front -- --host 127.0.0.1 --port 8081 -> PASS
+  - Command: dev-browser script (top/footer links + unknown route assertions) -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - src/components/Footer.tsx
+  - src/components/Header.tsx
+- What was implemented
+  - Replaced all footer placeholder `href="#"` links with valid destinations.
+  - Kept in-app footer navigation constrained to existing production routes only.
+  - Updated developer footer links to real HTTPS docs/resources.
+  - Made header auth/wallet state chips visible from md+ so session state is surfaced in shared layout.
+  - Browser-verified top nav/footer links resolve to valid pages and unknown routes still render NotFound.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Shared layout changes are easiest to validate with one script that iterates nav/footer links and asserts URL outcomes.
+  - Gotchas encountered
+  - `npm run dev` couples frontend/backend and will fail without backend env; use `npm run dev-front` for isolated UI verification when backend is out of scope.
+  - Useful context
+  - Route scope in `src/App.tsx` already matched the PRD six-route contract; only link hygiene/state visibility needed updates.
+---
