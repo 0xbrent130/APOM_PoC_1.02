@@ -562,3 +562,50 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - In this shell model, `dev-browser` helper server did not remain reachable after launch; direct Playwright automation with mocked API responses is a practical fallback for required frontend verification.
 ---
+## [2026-02-27 09:26:20 CST] - US-015: Integrate wallet and auth UX across all routes
+Thread: 
+Run: 20260227-065441-78451 (iteration 7)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-7.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-7.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: cc82998 feat(auth): integrate wallet auth route gating
+- Post-commit status: `clean`
+- Verification:
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run test` -> PASS
+  - Command: `npm run typecheck` -> PASS
+  - Command: `npm run build` -> PASS
+  - Command: `npx tsx (dev-browser script) -> http://localhost:8082/gaming route-level + action-level modal gating checks` -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - package-lock.json
+  - package.json
+  - src/App.tsx
+  - src/components/Header.tsx
+  - src/contracts/auth.ts
+  - src/contracts/index.ts
+  - src/hooks/use-protected-action.ts
+  - src/lib/auth-api.ts
+  - src/lib/wallet-config.ts
+  - src/pages/DeFi.tsx
+  - src/pages/Gaming.tsx
+  - src/pages/Governance.tsx
+  - src/pages/Launchpad.tsx
+  - src/pages/NFTMarketplace.tsx
+  - src/state/auth-state.tsx
+- What was implemented
+- Installed and wired wallet dependencies (`wagmi`, `@wagmi/core`, `@tanstack/react-query`, `viem`) into the frontend runtime with `WagmiProvider` config.
+- Replaced placeholder header auth banner with a real auth modal supporting email sign-in/register, wallet connect, wallet SIWE sign-in, wallet link-to-session, and wallet disconnect.
+- Added shared auth contracts and auth API client calls for `/api/auth/login`, `/register`, `/logout`, `/wallet/nonce`, `/wallet/verify`, and `/link/wallet`.
+- Added route-level auth gating prompts for all protected routes and unified action-level gating with a shared `useProtectedAction` hook.
+- Updated gaming, DeFi, NFT, launchpad, and governance actions to require consistent auth + linked wallet checks with shared prompt UX.
+- Implemented disconnected-wallet abort behavior before protected mutations so signed actions do not mutate UI state when required wallet connectivity is missing.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - A shared auth/wallet guard hook keeps route action gating consistent and reduces prompt/message drift across pages.
+  - Gotchas encountered
+  - Vite `development` API base (`http://localhost:8000/api`) with `withCredentials` triggers browser CORS issues against `origin: "*"`; browser validation is reliable with `VITE_APP_ENV=staging` and `/api` proxy.
+  - Useful context
+  - Wallet linking requires both an authenticated email session and a connected injected wallet address to generate nonce + SIWE signature flow successfully.
+---
