@@ -44,3 +44,38 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705
   - Useful context
     - `.ralph/` is gitignored, so progress/activity updates must be force-added when commit capture is required.
 ---
+## [2026-02-26 20:57:50 -0600] - US-002: Remove unsafe dynamic execution and quarantine insecure middleware
+Thread: 
+Run: 20260226-205121-19705 (iteration 2)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-2.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260226-205121-19705-iter-2.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 8c91baa security(middleware): remove dynamic rpc code execution
+- Post-commit status: `clean`
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: PORT=8011 npm run server -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - server/middleware/contractCaller.js
+  - server/middleware/errorHandler.js
+  - server/middleware/index.js
+  - server/routes/policy.js
+  - tests/rpc-safety.test.js
+- What was implemented
+  - Replaced unsafe dynamic execution middleware logic (`new Function`) with safe payload parsing and structured RPC failure responses.
+  - Refactored contract caller to return explicit structured responses and controlled `502` JSON for malformed/upstream RPC failures.
+  - Quarantined insecure middleware side effects by removing import-time contract invocation patterns and removing the unused policy-route import that triggered them.
+  - Added tests proving malformed RPC data returns `502`, JS-like payload strings are not executed, and middleware exports are side-effect free.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Legacy middleware had hidden behavior triggered by imports rather than explicit calls.
+  - Gotchas encountered
+  - Default server port 8000 was already in use during smoke check; using an alternate port validated runtime boot safely.
+  - Useful context
+  - Activity logging command works as `ralph log "message"` from repository root.
+---
