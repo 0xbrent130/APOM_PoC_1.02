@@ -641,3 +641,43 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - `node --test tests/**/*.test.js` runs all backend integration tests and remains compatible with `supertest`-based suites.
 ---
+## [2026-02-27 10:05:02 CST] - US-017: Add frontend route-level and flow-level test coverage
+Thread: 
+Run: 20260227-065441-78451 (iteration 9)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-9.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-9.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 44c9dac test(frontend): add route and e2e smoke coverage
+- Post-commit status: `clean`
+- Verification:
+  - Command: `npm run test:e2e:install` -> PASS
+  - Command: `npm run test:frontend` -> PASS
+  - Command: `npm run test:e2e` -> PASS
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run test` -> PASS
+  - Command: `npm run typecheck` -> PASS
+  - Command: `npm run build` -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - package-lock.json
+  - package.json
+  - src/hooks/use-protected-action.ts
+  - vitest.config.ts
+  - src/test/setup.ts
+  - src/__tests__/route-pages.test.tsx
+  - playwright.config.ts
+  - e2e/smoke.spec.ts
+- What was implemented
+- Installed frontend testing tooling (`@testing-library/react`, `@testing-library/user-event`, `jsdom`, `playwright`) and wired scripts for frontend unit tests and Playwright E2E smoke runs.
+- Added route-level frontend component tests covering loading/empty/error/success states and key action affordances for Gaming, DeFi, NFT Marketplace, Launchpad, and Governance routes.
+- Added a Playwright smoke suite spanning six routes with primary auth-protected actions, including the required positive DeFi authenticated action flow and negative unauthorized governance vote prompt-blocking flow.
+- Added an E2E-only wallet-check bypass flag in `useProtectedAction` (`VITE_E2E_SKIP_WALLET_CHECK`) so browser smoke tests can deterministically validate protected flows while still requiring authenticated sessions.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - For SPA auth state in browser tests, navigate via in-app links after login instead of reloading routes with `page.goto`, otherwise in-memory session state resets.
+  - Gotchas encountered
+  - API path conventions are mixed (`/api/...` in auth calls vs `/...` elsewhere), so E2E API mocks should match suffixes (`/auth/...`) rather than hardcoded full prefixes.
+  - Useful context
+  - Route-level auto-login prompts with `next` query behavior can interfere with deterministic flows; explicit in-test sign-in sequencing and scoped selectors avoids flaky modal interaction.
+---
