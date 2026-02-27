@@ -39,3 +39,14 @@ export type {
   LaunchpadProjectSummary,
   LaunchpadStats,
 } from "./launchpad";
+export type {
+  GovernanceActionState,
+  GovernanceOverview,
+  GovernanceProposalStatus,
+  GovernanceProposalSummary,
+  GovernanceStats,
+  SubmitDiscussionRequest,
+  SubmitDiscussionResponse,
+  SubmitVoteRequest,
+  SubmitVoteResponse,
+} from "./governance";
