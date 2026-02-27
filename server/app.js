@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser")
 const { bootstrapPrisma } = require("./prismaBootstrap.js")
 const { getRuntimeConfig, getSecurityRuntimeConfig } = require("./config.js")
 const { getPrismaClient } = require("./prismaClient.js")
+const { createUptimeMonitor } = require("./uptimeMonitor.js")
 const authRouter = require("./routes/auth.js")
 const customerRouter = require("./routes/customer.js")
 const agentRouter = require("./routes/agent.js")
@@ -60,6 +61,7 @@ function createApp(options = {}) {
     const serverApp = express()
     const readinessCheck = options.readinessCheck || defaultReadinessCheck
     const config = getSecurityRuntimeConfig(options.env || process.env)
+    const logger = options.logger || console
     const allowlist = parseCorsAllowlist(config.CORS_ORIGINS)
     if (allowlist.size === 0 && config.NODE_ENV !== "production") {
         allowlist.add("http://localhost:3000")
@@ -74,6 +76,22 @@ function createApp(options = {}) {
     serverApp.use(express.urlencoded({ extended: true, limit: config.REQUEST_BODY_LIMIT }))
     serverApp.use(express.json({ limit: config.REQUEST_BODY_LIMIT }))
     serverApp.use(cookieParser())
+    serverApp.use((req, res, next) => {
+        const startedAt = Date.now()
+        res.on("finish", () => {
+            logger.log(
+                JSON.stringify({
+                    level: "info",
+                    event: "http_request",
+                    method: req.method,
+                    route: req.originalUrl || req.url,
+                    statusCode: res.statusCode,
+                    durationMs: Date.now() - startedAt,
+                })
+            )
+        })
+        next()
+    })
 
     // Reject cross-origin requests that are not explicitly allowed.
     serverApp.use((req, res, next) => {
@@ -152,7 +170,7 @@ function createApp(options = {}) {
     // *contact us API
     serverApp.post("/api/contact",(req,res)=>{
         let body = req.body
-        console.log(JSON.stringify({
+        logger.log(JSON.stringify({
             level: "info",
             event: "contact_submission",
             body: redactSensitiveData(body),
@@ -168,14 +186,30 @@ const app = createApp()
 async function startServer(options = {}) {
     const bootstrap = options.bootstrap || bootstrapPrisma
     const serverApp = options.app || app
-    const port = options.port ?? getRuntimeConfig().PORT
+    const logger = options.logger || console
+    const runtimeConfig = getRuntimeConfig(options.env || process.env)
+    const port = options.port ?? runtimeConfig.PORT
 
-    getRuntimeConfig()
     await bootstrap()
 
     return new Promise((resolve) => {
         const server = serverApp.listen(port, () => {
-            console.log(`Server Started on port ${port}`);
+            logger.log(
+                JSON.stringify({
+                    level: "info",
+                    event: "server_started",
+                    port,
+                    env: runtimeConfig.NODE_ENV,
+                })
+            )
+            const uptimeMonitor = createUptimeMonitor({
+                url: runtimeConfig.UPTIME_PING_URL,
+                intervalMs: runtimeConfig.UPTIME_PING_INTERVAL_MS,
+                logger,
+                fetchImpl: options.fetchImpl,
+            })
+            uptimeMonitor.start()
+            server.on("close", () => uptimeMonitor.stop())
             resolve(server)
         })
     })

@@ -11,6 +11,12 @@ const runtimeEnvSchema = z.object({
   REQUEST_BODY_LIMIT: z.string().optional().default("100kb"),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1000).optional().default(15 * 60 * 1000),
   RATE_LIMIT_MAX: z.coerce.number().int().min(1).optional().default(100),
+  UPTIME_PING_URL: z
+    .union([z.literal(""), z.string().url()])
+    .optional()
+    .default("")
+    .transform((value) => value || undefined),
+  UPTIME_PING_INTERVAL_MS: z.coerce.number().int().min(1000).optional().default(5 * 60 * 1000),
 });
 
 const securityEnvSchema = runtimeEnvSchema.omit({
