@@ -1,6 +1,7 @@
 const express = require("express")
 const { z } = require("zod")
 const { getPrismaClient } = require("../prismaClient.js")
+const { requireAuth, requireRole } = require("../middleware/auth.js")
 
 const router = express.Router()
 
@@ -51,7 +52,7 @@ const modifySchema = z.object({
   amount: z.coerce.number().positive().finite(),
 })
 
-router.post("/modify", async (req, res) => {
+router.post("/modify", requireAuth, requireRole("user", "admin"), async (req, res) => {
   const payload = parsePayload(modifySchema, req, res)
 
   if (!payload) {

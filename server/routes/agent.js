@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt")
 const crypto = require("node:crypto")
 const { z } = require("zod")
 const { getPrismaClient } = require("../prismaClient.js")
+const { requireAuth, requireRole } = require("../middleware/auth.js")
 
 const router = express.Router()
 
@@ -195,7 +196,7 @@ router.post("/login", async (req, res) => {
 })
 
 // Update Data of Agent
-router.post("/update", async (req, res) => {
+router.post("/update", requireAuth, requireRole("user", "admin"), async (req, res) => {
   const payload = parsePayload(updateSchema, req, res)
 
   if (!payload) {

@@ -2,6 +2,7 @@ const express = require("express")
 const crypto = require("node:crypto")
 const { z } = require("zod")
 const { getPrismaClient } = require("../prismaClient.js")
+const { requireAuth, requireRole } = require("../middleware/auth.js")
 
 const router = express.Router()
 
@@ -83,7 +84,7 @@ const changeStatusSchema = z
     }
   })
 
-router.post("/transaction", async (req, res) => {
+router.post("/transaction", requireAuth, requireRole("user", "admin"), async (req, res) => {
   const payload = parsePayload(createTransactionSchema, req, res)
 
   if (!payload) {
@@ -135,7 +136,7 @@ router.get("/fetch", async (_req, res) => {
   }
 })
 
-router.post("/changeStatus", async (req, res) => {
+router.post("/changeStatus", requireAuth, requireRole("user", "admin"), async (req, res) => {
   const payload = parsePayload(changeStatusSchema, req, res)
 
   if (!payload) {

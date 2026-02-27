@@ -8,12 +8,14 @@ let prisma
 let app
 let server
 let baseUrl
+let authCookie
 
-async function request(pathname, payload, method = "POST") {
+async function request(pathname, payload, method = "POST", extraHeaders = {}) {
   const response = await fetch(`${baseUrl}${pathname}`, {
     method,
     headers: {
       "content-type": "application/json",
+      ...extraHeaders,
     },
     body: payload ? JSON.stringify(payload) : undefined,
   })
@@ -30,6 +32,21 @@ test.before(async () => {
   ;({ createApp: app } = require("../server/app.js"))
 
   prisma = getPrismaClient()
+
+  await prisma.$executeRawUnsafe(
+    'CREATE TABLE IF NOT EXISTS "User" ("id" TEXT NOT NULL PRIMARY KEY, "email" TEXT NOT NULL, "passwordHash" TEXT NOT NULL, "displayName" TEXT NOT NULL, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL);'
+  )
+  await prisma.$executeRawUnsafe('CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");')
+  await prisma.$executeRawUnsafe(
+    'CREATE TABLE IF NOT EXISTS "WalletAccount" ("id" TEXT NOT NULL PRIMARY KEY, "userId" TEXT NOT NULL, "address" TEXT NOT NULL, "chainId" INTEGER NOT NULL, "isPrimary" BOOLEAN NOT NULL DEFAULT false, "linkedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "WalletAccount_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE);'
+  )
+  await prisma.$executeRawUnsafe(
+    'CREATE UNIQUE INDEX IF NOT EXISTS "WalletAccount_address_chainId_key" ON "WalletAccount"("address", "chainId");'
+  )
+  await prisma.$executeRawUnsafe(
+    'CREATE TABLE IF NOT EXISTS "Session" ("id" TEXT NOT NULL PRIMARY KEY, "userId" TEXT NOT NULL, "tokenHash" TEXT NOT NULL, "expiresAt" DATETIME NOT NULL, "revokedAt" DATETIME, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE);'
+  )
+  await prisma.$executeRawUnsafe('CREATE UNIQUE INDEX IF NOT EXISTS "Session_tokenHash_key" ON "Session"("tokenHash");')
 
   await prisma.$executeRawUnsafe(
     'CREATE TABLE IF NOT EXISTS "customer" ("cid" TEXT NOT NULL PRIMARY KEY, "name" TEXT NOT NULL, "dob" TEXT NOT NULL, "gender" TEXT NOT NULL, "address" TEXT NOT NULL, "pincode" TEXT NOT NULL, "contact" TEXT NOT NULL, "mname" TEXT NOT NULL, "fname" TEXT NOT NULL, "email" TEXT NOT NULL, "password" TEXT NOT NULL);'
@@ -79,6 +96,9 @@ test.after(async () => {
 })
 
 test.beforeEach(async () => {
+  await prisma.session.deleteMany()
+  await prisma.walletAccount.deleteMany()
+  await prisma.user.deleteMany()
   await prisma.statement.deleteMany()
   await prisma.centre.deleteMany()
   await prisma.policy.deleteMany()
@@ -124,6 +144,15 @@ test.beforeEach(async () => {
       ramount: 120,
     },
   })
+
+  const authResponse = await request("/api/auth/register", {
+    email: "admin@example.com",
+    password: "StrongPass1!",
+    displayName: "Admin User",
+  })
+  assert.equal(authResponse.response.status, 201)
+  authCookie = authResponse.response.headers.get("set-cookie")
+  assert.ok(authCookie)
 })
 
 test("changeStatus updates statement and returns updated state", async () => {
@@ -135,7 +164,7 @@ test("changeStatus updates statement and returns updated state", async () => {
     duedate: "2026-03-01",
     paydate: "2026-03-01",
     time: "10:00",
-  })
+  }, "POST", { cookie: authCookie })
 
   assert.equal(createResult.response.status, 201)
   const tid = createResult.body.data.transaction.tid
@@ -143,7 +172,7 @@ test("changeStatus updates statement and returns updated state", async () => {
   const { response, body } = await request("/api/statements/changeStatus", {
     tid,
     newStatus: "paid",
-  })
+  }, "POST", { cookie: authCookie })
 
   assert.equal(response.status, 200)
   assert.equal(body.success, true)
@@ -160,7 +189,7 @@ test("changeStatus for missing statement returns 404 and no phantom data", async
   const { response, body } = await request("/api/statements/changeStatus", {
     tid: "missing-tid",
     newStatus: "paid",
-  })
+  }, "POST", { cookie: authCookie })
 
   assert.equal(response.status, 404)
   assert.equal(body.success, false)
@@ -181,7 +210,7 @@ test("agent update for missing record returns 404 and creates nothing", async ()
     pincode: "10003",
     contact: "5551234567",
     email: "missing@example.com",
-  })
+  }, "POST", { cookie: authCookie })
 
   assert.equal(response.status, 404)
   assert.equal(body.success, false)
@@ -197,7 +226,7 @@ test("centre modify increments existing centre amount", async () => {
     pid: "policy1001",
     aid: "agent10001",
     amount: 150,
-  })
+  }, "POST", { cookie: authCookie })
 
   assert.equal(first.response.status, 201)
   assert.equal(first.body.success, true)
@@ -208,7 +237,7 @@ test("centre modify increments existing centre amount", async () => {
     pid: "policy1001",
     aid: "agent10001",
     amount: 50,
-  })
+  }, "POST", { cookie: authCookie })
 
   assert.equal(second.response.status, 200)
   assert.equal(second.body.success, true)

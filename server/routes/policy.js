@@ -2,6 +2,7 @@ const express = require("express")
 const crypto = require("node:crypto")
 const { z } = require("zod")
 const { getPrismaClient } = require("../prismaClient.js")
+const { requireAuth, requireRole } = require("../middleware/auth.js")
 
 const router = express.Router()
 
@@ -50,7 +51,7 @@ const createPolicySchema = z.object({
   ramount: z.coerce.number().nonnegative().finite(),
 })
 
-router.post("/create", async (req, res) => {
+router.post("/create", requireAuth, requireRole("user", "admin"), async (req, res) => {
   const payload = parsePayload(createPolicySchema, req, res)
 
   if (!payload) {

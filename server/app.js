@@ -1,9 +1,11 @@
 require("dotenv").config()
 const express = require("express")
 const cors = require("cors")
+const cookieParser = require("cookie-parser")
 const { bootstrapPrisma } = require("./prismaBootstrap.js")
 const { getRuntimeConfig } = require("./config.js")
 const { getPrismaClient } = require("./prismaClient.js")
+const authRouter = require("./routes/auth.js")
 const customerRouter = require("./routes/customer.js")
 const agentRouter = require("./routes/agent.js")
 const policyRouter = require("./routes/policy.js")
@@ -20,12 +22,14 @@ function createApp(options = {}) {
 
     serverApp.use(express.urlencoded({extended:true}))
     serverApp.use(express.json())
+    serverApp.use(cookieParser())
 
     serverApp.use(cors({
         origin:"*",
         methods:["POST","GET","PUT","DELETE"]
     }))
 
+    serverApp.use("/api/auth",authRouter)
     serverApp.use("/api/customer",customerRouter)
     serverApp.use("/api/agent",agentRouter)
     serverApp.use("/api/policy",policyRouter)
