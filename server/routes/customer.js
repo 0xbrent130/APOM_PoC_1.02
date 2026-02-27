@@ -1,274 +1,489 @@
 require("dotenv").config()
 const express = require("express")
-const router = express.Router()
 const bcrypt = require("bcrypt")
-const db = require("../database.js")
-const {generateID} = require("../utils.js")
+const crypto = require("node:crypto")
+const { z } = require("zod")
+const { getPrismaClient } = require("../prismaClient.js")
 
-// **Create Account
-router.post("/signup",(req,res)=>{
-    let {name,dob,gender,address,pincode,contact,mname,fname,email,password} = req.body
-    let str = `select * from customer where email="${email}";`
-    db.query(str,async(err,result)=>{
-        if(err){
-            res.status(500).json({status:false,message:"Server Error"})
+const router = express.Router()
 
-            return
-        }
-        else if(result.length != 0){
-            res.status(400).json({status:false,message:"Create account with another email"})
-            return
-        }
-        else{
-            let cid = generateID(10)
-            let salt = await bcrypt.genSalt(5);
-            let hashPassword = await bcrypt.hash(password,salt)
+const sqlMetaPattern = /('|--|\/\*|\*\/|;|\bOR\b\s+\d+=\d+|\bAND\b\s+\d+=\d+)/i
 
-            let string = `insert into customer(cid,name,dob,gender,address,pincode,contact,mname,fname,email,password) values("${cid}","${name}","${dob}","${gender}","${address}",${pincode},${contact},"${mname}","${fname}","${email}","${hashPassword}");`
-            
-            db.query(string,(err,result)=>{
-                if(err){
-                    res.status(500).json({status:false,message:"Server Error"})
+function hasSqlInjectionRisk(value) {
+  return sqlMetaPattern.test(value)
+}
 
-                    return
-                }
-                else{
-                    let user = {name,dob,gender,address,pincode,contact,mname,fname,email}
-                    res.status(200).json({status:true,message:"User Created",user:user})
-                }
-            })
-        }
-    })
+function createLegacyId() {
+  return crypto.randomBytes(8).toString("hex").slice(0, 10)
+}
+
+function sendSuccess(res, statusCode, data) {
+  res.status(statusCode).json({
+    success: true,
+    data,
+  })
+}
+
+function sendError(res, statusCode, code, message) {
+  res.status(statusCode).json({
+    success: false,
+    error: {
+      code,
+      message,
+    },
+  })
+}
+
+function normalizeCustomer(customer) {
+  return {
+    cid: customer.cid,
+    name: customer.name,
+    dob: customer.dob,
+    gender: customer.gender,
+    address: customer.address,
+    pincode: customer.pincode,
+    contact: customer.contact,
+    mname: customer.mname,
+    fname: customer.fname,
+    email: customer.email,
+  }
+}
+
+function parsePayload(schema, req, res) {
+  const result = schema.safeParse(req.body)
+
+  if (!result.success) {
+    sendError(res, 400, "INVALID_INPUT", "Invalid request payload")
+    return null
+  }
+
+  return result.data
+}
+
+const idSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(64)
+  .regex(/^[a-zA-Z0-9_-]+$/)
+
+const safeStringSchema = z.string().trim().min(1).max(255)
+
+const signupSchema = z
+  .object({
+    name: safeStringSchema,
+    dob: z.string().trim().min(1).max(64),
+    gender: safeStringSchema,
+    address: z.string().trim().min(1).max(500),
+    pincode: z.string().trim().min(3).max(20),
+    contact: z.string().trim().min(3).max(20),
+    mname: safeStringSchema,
+    fname: safeStringSchema,
+    email: z.string().trim().email().max(320),
+    password: z.string().min(8).max(72),
+  })
+  .superRefine((input, ctx) => {
+    if (hasSqlInjectionRisk(input.email) || hasSqlInjectionRisk(input.password)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid credentials" })
+    }
+  })
+
+const loginSchema = z
+  .object({
+    email: z.string().trim().email().max(320),
+    password: z.string().min(1).max(72),
+  })
+  .superRefine((input, ctx) => {
+    if (hasSqlInjectionRisk(input.email) || hasSqlInjectionRisk(input.password)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Invalid credentials" })
+    }
+  })
+
+const updateSchema = z.object({
+  cid: idSchema,
+  name: safeStringSchema,
+  dob: z.string().trim().min(1).max(64),
+  gender: safeStringSchema,
+  address: z.string().trim().min(1).max(500),
+  pincode: z.string().trim().min(3).max(20),
+  contact: z.string().trim().min(3).max(20),
+  mname: safeStringSchema,
+  fname: safeStringSchema,
+  email: z.string().trim().email().max(320),
 })
 
-// **Login
-router.post("/login",(req,res)=>{
-    let {email,password} = req.body
-    let string = `select * from customer where email="${email}";`
-    db.query(string,async(err,result)=>{
-        if(err){
-            res.status(500).json({status:false,message:"Server Error"})
+const customerIdSchema = z.object({ cid: idSchema })
 
-        }
-        else if(result.length == 0){
-            res.status(400).json({status:false,message:"Login with correct credentials"})
-            return
-        }
-        else{
-            let hashPassword = result[0].password
-            let isValid = await bcrypt.compare(password,hashPassword);
-            if(isValid == false){
-                res.status(400).json({status:false,message:"Login with correct credentials"})
-            }
-            else{
-                let user = {
-                    address:result[0].address,
-                    cid:result[0].cid,
-                    contact:result[0].contact,
-                    email:result[0].email,
-                    dob:result[0].dob,
-                    gender:result[0].gender,
-                    name:result[0].name,
-                    fname:result[0].fname,
-                    mname:result[0].mname,
-                    pincode:result[0].pincode,
-                }
-                res.status(200).json({status:true,message:"User LogedIn",user:user})
-            }
-        }
-    })
+const buySchema = z.object({
+  cid: idSchema,
+  pid: idSchema,
+  aid: idSchema,
+  amount: z.coerce.number().positive().finite(),
+  paydate: z.string().trim().min(1).max(64),
+  time: z.string().trim().min(1).max(64),
 })
 
-// **Update Data of Customer 
-router.post("/update",(req,res)=>{
-    let {cid,name,dob,gender,address,pincode,contact,mname,fname,email} = req.body
+function isPrismaKnownError(error) {
+  return Boolean(error && typeof error === "object" && error.code)
+}
 
-    let string  = `update customer set name="${name}", dob="${dob}", gender="${gender}", address="${address}", pincode="${pincode}", contact="${contact}", mname="${mname}", fname="${fname}", email="${email}" where cid="${cid}"`
+function handleRouteError(res, error) {
+  if (isPrismaKnownError(error) && error.code === "P2002") {
+    return sendError(res, 409, "EMAIL_IN_USE", "Email already exists")
+  }
 
-    db.query(string,(err,result)=>{
-        if(err){
-            res.status(500).json({status:false,message:"Server Error"})
+  console.error(error)
+  return sendError(res, 500, "INTERNAL_SERVER_ERROR", "Server Error")
+}
 
-        }
-        else{
-            res.status(200).json({status:true,message:"User Updated"})
-        }
+// Create Account
+router.post("/signup", async (req, res) => {
+  const payload = parsePayload(signupSchema, req, res)
+
+  if (!payload) {
+    return
+  }
+
+  try {
+    const prisma = getPrismaClient()
+    const existingCustomer = await prisma.customer.findUnique({
+      where: { email: payload.email.toLowerCase() },
+      select: { cid: true },
     })
+
+    if (existingCustomer) {
+      sendError(res, 409, "EMAIL_IN_USE", "Create account with another email")
+      return
+    }
+
+    const password = await bcrypt.hash(payload.password, 10)
+
+    const customer = await prisma.customer.create({
+      data: {
+        cid: createLegacyId(),
+        name: payload.name,
+        dob: payload.dob,
+        gender: payload.gender,
+        address: payload.address,
+        pincode: payload.pincode,
+        contact: payload.contact,
+        mname: payload.mname,
+        fname: payload.fname,
+        email: payload.email.toLowerCase(),
+        password,
+      },
+    })
+
+    sendSuccess(res, 201, {
+      message: "User Created",
+      user: normalizeCustomer(customer),
+    })
+  } catch (error) {
+    handleRouteError(res, error)
+  }
 })
 
-//* Get user Policies
-router.post("/policies",(req,res)=>{
-    const {cid} = req.body
-    let string = `select policy.pid,name as pname,ramount,centre.amount as total,policy.amount as amount,duration from centre join policy on centre.cid="${cid}" and centre.pid=policy.pid;`
-    let str = `select * from centre where cid="${cid}"`
+// Login
+router.post("/login", async (req, res) => {
+  const payload = parsePayload(loginSchema, req, res)
 
-    db.query(str,(e_,r_)=>{
-        if(e_){
-            console.log(e_);
-            res.status(500).json({status:false,message:"Server Error"})
+  if (!payload) {
+    return
+  }
 
-        }
-        else{
-            if(r_.length === 0){
-                res.status(200).json({status:true,result:[]})
-            }
-            else{
-                db.query(string,(err,result)=>{
-                    if(err){
-                        console.log(err);
-                        res.status(500).json({status:false,message:"Server Error"})
-
-                    }
-                    else{
-                        let str= `select agent.aid,name as aname from agent join centre on centre.cid="${cid}" and centre.aid=agent.aid;`
-                        db.query(str,(e,r)=>{
-                            if(e){
-                                console.log(e);
-                                res.status(500).json({status:false,message:"Server Error"})
-
-                            }
-                            else{
-                                let ans = []
-                                for(let i=0;i<r.length;i++){
-                                    ans.push({...r[i],...result[i]})
-                                }
-                                res.status(200).json({status:true,result:ans})
-                            }
-                        })
-                    }
-                })
-            }
-        }
+  try {
+    const prisma = getPrismaClient()
+    const customer = await prisma.customer.findUnique({
+      where: { email: payload.email.toLowerCase() },
     })
 
-   
+    if (!customer) {
+      sendError(res, 401, "INVALID_CREDENTIALS", "Login with correct credentials")
+      return
+    }
 
+    const isValid = await bcrypt.compare(payload.password, customer.password)
+
+    if (!isValid) {
+      sendError(res, 401, "INVALID_CREDENTIALS", "Login with correct credentials")
+      return
+    }
+
+    sendSuccess(res, 200, {
+      message: "User LoggedIn",
+      user: normalizeCustomer(customer),
+    })
+  } catch (error) {
+    handleRouteError(res, error)
+  }
 })
 
+// Update Customer
+router.post("/update", async (req, res) => {
+  const payload = parsePayload(updateSchema, req, res)
 
-//* Get user agents
-router.post("/agents",(req,res)=>{
-    let {cid} = req.body
-    let str = `select * from centre where cid="${cid}"`
-    db.query(str,(e,r)=>{
-        if(e){
-            console.log(e);
-            res.status(500).json({status:false,message:"Server Error"})
+  if (!payload) {
+    return
+  }
 
-        }
-        else{
-            if(r.length === 0){
-                res.status(200).json({status:true,result:[]})
-            }
-            else{
-                let string = `select agent.aid,name,gender,contact,address,pincode,email from agent join centre on centre.cid="${cid}" and centre.aid=agent.aid;`
-                db.query(string,(err,result)=>{
-                    if(err){
-                        console.log(err);
-                        res.status(500).json({status:false,message:"Server Error"})
-
-                    }
-                    else{
-                        res.status(200).json({status:true,result:result})
-                    }
-                })
-            }
-        }
+  try {
+    const prisma = getPrismaClient()
+    const existingCustomer = await prisma.customer.findUnique({
+      where: { cid: payload.cid },
+      select: { cid: true },
     })
-   
+
+    if (!existingCustomer) {
+      sendError(res, 404, "CUSTOMER_NOT_FOUND", "Customer does not exist")
+      return
+    }
+
+    const updatedCustomer = await prisma.customer.update({
+      where: { cid: payload.cid },
+      data: {
+        name: payload.name,
+        dob: payload.dob,
+        gender: payload.gender,
+        address: payload.address,
+        pincode: payload.pincode,
+        contact: payload.contact,
+        mname: payload.mname,
+        fname: payload.fname,
+        email: payload.email.toLowerCase(),
+      },
+    })
+
+    sendSuccess(res, 200, {
+      message: "User Updated",
+      user: normalizeCustomer(updatedCustomer),
+    })
+  } catch (error) {
+    handleRouteError(res, error)
+  }
 })
 
-// *All Customers
-router.get("/all",(req,res)=>{
-    let str = `select * from customer;`
-    db.query(str,(err,result)=>{
-        if(err){
-            console.log();
-            res.status(500).json({status:false,message:"Server Error"})
+// Get user policies
+router.post("/policies", async (req, res) => {
+  const payload = parsePayload(customerIdSchema, req, res)
 
-        }
-        else{
-            res.status(200).json({status:true,result:result})
-        }
+  if (!payload) {
+    return
+  }
+
+  try {
+    const prisma = getPrismaClient()
+    const centres = await prisma.centre.findMany({
+      where: { cid: payload.cid },
+      include: {
+        policy: {
+          select: {
+            pid: true,
+            name: true,
+            duration: true,
+            amount: true,
+            ramount: true,
+          },
+        },
+        agent: {
+          select: {
+            aid: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: [{ pid: "asc" }, { aid: "asc" }],
     })
+
+    const items = centres.map((centre) => ({
+      pid: centre.policy.pid,
+      pname: centre.policy.name,
+      ramount: Number(centre.policy.ramount),
+      total: Number(centre.amount),
+      amount: Number(centre.policy.amount),
+      duration: centre.policy.duration,
+      aid: centre.agent.aid,
+      aname: centre.agent.name,
+    }))
+
+    sendSuccess(res, 200, { items })
+  } catch (error) {
+    handleRouteError(res, error)
+  }
 })
 
-//* Get Statements
-router.post("/statements",(req,res)=>{
-    let {cid} = req.body
-    let str = `select * from centre where cid="${cid}"`
-    db.query(str,(e,r)=>{
-        if(e){
-            console.log(e);
-            res.status(500).json({status:false,message:"Server Error"})
+// Get user agents
+router.post("/agents", async (req, res) => {
+  const payload = parsePayload(customerIdSchema, req, res)
 
-        }
-        else{
-            if(r.length === 0){
-                res.status(200).json({status:true,result:[]})
-            }
-            else{
-                let string = `select tid,statements.pid,statements.amount,status,duedate,paydate,time from statements join centre on centre.cid="${cid}" and centre.pid=statements.pid and centre.cid=statements.cid;`
-                db.query(string,(err,result)=>{
-                    if(err){
-                        console.log(err);
-                        res.status(500).json({status:false,message:"Server Error"})
+  if (!payload) {
+    return
+  }
 
-                    }
-                    else{
-                        res.status(200).json({status:true,result:result})
-                    }
-                })
-            }
-        }
+  try {
+    const prisma = getPrismaClient()
+    const centres = await prisma.centre.findMany({
+      where: { cid: payload.cid },
+      include: {
+        agent: {
+          select: {
+            aid: true,
+            name: true,
+            gender: true,
+            contact: true,
+            address: true,
+            pincode: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: [{ aid: "asc" }, { pid: "asc" }],
     })
-   
+
+    const items = centres.map((centre) => centre.agent)
+
+    sendSuccess(res, 200, { items })
+  } catch (error) {
+    handleRouteError(res, error)
+  }
 })
 
-//*Buy Policy
-router.post("/buy",(req,res)=>{
-    let {cid,pid,amount,paydate,time,aid}= req.body;
-    let string = `select * from centre where pid="${pid}" and aid="${aid}" and cid="${cid}";`
-    db.query(string,(e_,r_)=>{
-        if(e_){
-            console.log(e_);
-            res.status(500).json({status:false,message:"Server Error"})
-
-            return
-        }
-        else{
-            if(r_.length !== 0){
-                res.json({status:false,message:"Already Present in your current policies.."})
-            }
-            else{
-                let str = `insert into centre(cid,pid,aid,amount) values("${cid}","${pid}","${aid}",${amount});`
-                db.query(str,(err,result)=>{
-                    if(err){
-                        console.log(err);
-                        res.status(500).json({status:false,message:"Server Error"})
-
-                    }
-                    else{
-                        let tid = generateID(10)
-                        let string = `insert into statements(tid,cid,pid,amount,status,duedate,paydate,time) values("${tid}","${cid}","${pid}",${amount},"paid","${paydate}","${paydate}","${time}")`
-                        db.query(string,(e,r)=>{
-                            if(e){
-                                console.log(e);
-                                res.status(500).json({status:false,message:"Server Error"})
-
-                                return
-                            }
-                            else{
-                                res.status(200).json({result:{centre:result,transaction:r},status:true})
-                            }
-                        })
-                    }
-                })
-            }
-        }
+// All Customers
+router.get("/all", async (_req, res) => {
+  try {
+    const prisma = getPrismaClient()
+    const customers = await prisma.customer.findMany({
+      orderBy: { email: "asc" },
     })
-    
 
+    sendSuccess(res, 200, {
+      items: customers.map(normalizeCustomer),
+    })
+  } catch (error) {
+    handleRouteError(res, error)
+  }
+})
+
+// Get Statements
+router.post("/statements", async (req, res) => {
+  const payload = parsePayload(customerIdSchema, req, res)
+
+  if (!payload) {
+    return
+  }
+
+  try {
+    const prisma = getPrismaClient()
+    const statements = await prisma.statement.findMany({
+      where: { cid: payload.cid },
+      select: {
+        tid: true,
+        pid: true,
+        amount: true,
+        status: true,
+        duedate: true,
+        paydate: true,
+        time: true,
+      },
+      orderBy: { duedate: "asc" },
+    })
+
+    sendSuccess(res, 200, {
+      items: statements.map((statement) => ({
+        ...statement,
+        amount: Number(statement.amount),
+      })),
+    })
+  } catch (error) {
+    handleRouteError(res, error)
+  }
+})
+
+// Buy Policy
+router.post("/buy", async (req, res) => {
+  const payload = parsePayload(buySchema, req, res)
+
+  if (!payload) {
+    return
+  }
+
+  try {
+    const prisma = getPrismaClient()
+
+    const [customer, policy, agent] = await Promise.all([
+      prisma.customer.findUnique({ where: { cid: payload.cid }, select: { cid: true } }),
+      prisma.policy.findUnique({ where: { pid: payload.pid }, select: { pid: true } }),
+      prisma.agent.findUnique({ where: { aid: payload.aid }, select: { aid: true } }),
+    ])
+
+    if (!customer) {
+      sendError(res, 404, "CUSTOMER_NOT_FOUND", "Customer does not exist")
+      return
+    }
+
+    if (!policy) {
+      sendError(res, 404, "POLICY_NOT_FOUND", "Policy does not exist")
+      return
+    }
+
+    if (!agent) {
+      sendError(res, 404, "AGENT_NOT_FOUND", "Agent does not exist")
+      return
+    }
+
+    const existingCentre = await prisma.centre.findUnique({
+      where: {
+        cid_pid_aid: {
+          cid: payload.cid,
+          pid: payload.pid,
+          aid: payload.aid,
+        },
+      },
+    })
+
+    if (existingCentre) {
+      sendError(res, 409, "POLICY_ALREADY_OWNED", "Already present in your current policies")
+      return
+    }
+
+    const tid = createLegacyId()
+    const amount = payload.amount
+
+    const [centre, transaction] = await prisma.$transaction([
+      prisma.centre.create({
+        data: {
+          cid: payload.cid,
+          pid: payload.pid,
+          aid: payload.aid,
+          amount,
+        },
+      }),
+      prisma.statement.create({
+        data: {
+          tid,
+          cid: payload.cid,
+          pid: payload.pid,
+          amount,
+          status: "paid",
+          duedate: payload.paydate,
+          paydate: payload.paydate,
+          time: payload.time,
+        },
+      }),
+    ])
+
+    sendSuccess(res, 200, {
+      centre: {
+        ...centre,
+        amount: Number(centre.amount),
+      },
+      transaction: {
+        ...transaction,
+        amount: Number(transaction.amount),
+      },
+    })
+  } catch (error) {
+    handleRouteError(res, error)
+  }
 })
 
 module.exports = router

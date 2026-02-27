@@ -1,6 +1,7 @@
 # Activity Log
 
 ## Run Summary
+- 2026-02-26 21:11:19 | run=20260226-205121-19705 | iter=4 | mode=build | story=US-004 | duration=333s | status=success
 - 2026-02-26 21:05:44 | run=20260226-205121-19705 | iter=3 | mode=build | story=US-003 | duration=444s | status=success
 - 2026-02-26 20:58:18 | run=20260226-205121-19705 | iter=2 | mode=build | story=US-002 | duration=201s | status=success
 - 2026-02-26 20:54:55 | run=20260226-205121-19705 | iter=1 | mode=build | story=US-001 | duration=214s | status=success
@@ -31,3 +32,8 @@
 [2026-02-26 21:08:10] US-004 major code changes: added runtime env validation, startup structured errors, and /health live+ready endpoints with DB readiness check plus tests
 [2026-02-26 21:08:38] US-004 verification complete: lint/test/typecheck/build passed; startup missing DATABASE_URL exits non-zero with structured JSON log
 [2026-02-26 21:11:02] US-004 progress entry appended to .ralph/progress.md
+[2026-02-26 21:11:19] ITERATION 4 end (duration=333s)
+[2026-02-26 21:11:21] ITERATION 5 start (mode=build story=US-005)
+[2026-02-26 21:11:42] Start US-005 implementation: audit customer routes for Prisma migration, validation, and standardized safe errors
+[2026-02-26 21:14:25] Implemented US-005 code changes: Prisma legacy models/migration, customer route refactor with validation and safe error envelopes, and customer route integration tests
+[2026-02-26 21:15:23] US-005 verification complete: lint/test/typecheck/build passed; runtime server boot confirmed on PORT=8011

@@ -238,3 +238,80 @@ model GovernanceVote {
   @@unique([proposalId, userId])
   @@index([proposalId, createdAt])
 }
+
+model Customer {
+  cid         String      @id
+  name        String
+  dob         String
+  gender      String
+  address     String
+  pincode     String
+  contact     String
+  mname       String
+  fname       String
+  email       String      @unique
+  password    String
+  centres     Centre[]
+  statements  Statement[]
+
+  @@map("customer")
+}
+
+model Agent {
+  aid      String   @id
+  name     String
+  gender   String
+  contact  String
+  address  String
+  pincode  String
+  email    String   @unique
+  password String
+  centres  Centre[]
+
+  @@map("agent")
+}
+
+model Policy {
+  pid         String      @id
+  name        String
+  duration    Int
+  description String
+  amount      Decimal
+  ramount     Decimal
+  centres     Centre[]
+  statements  Statement[]
+
+  @@map("policy")
+}
+
+model Centre {
+  cid      String
+  pid      String
+  aid      String
+  amount   Decimal
+  customer Customer @relation(fields: [cid], references: [cid], onDelete: Cascade)
+  policy   Policy   @relation(fields: [pid], references: [pid], onDelete: Cascade)
+  agent    Agent    @relation(fields: [aid], references: [aid], onDelete: Cascade)
+
+  @@id([cid, pid, aid])
+  @@index([cid])
+  @@index([pid])
+  @@index([aid])
+  @@map("centre")
+}
+
+model Statement {
+  tid      String   @id
+  cid      String
+  pid      String
+  amount   Decimal
+  status   String
+  duedate  String
+  paydate  String
+  time     String
+  customer Customer @relation(fields: [cid], references: [cid], onDelete: Cascade)
+  policy   Policy   @relation(fields: [pid], references: [pid], onDelete: Cascade)
+
+  @@index([cid, pid])
+  @@map("statements")
+}
