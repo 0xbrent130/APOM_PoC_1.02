@@ -398,3 +398,45 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - Browser validation was run via the `dev-browser` skill and confirmed live action + disabled upcoming reason behavior on `/gaming`.
 ---
+## [2026-02-27 07:13:57 CST] - US-011: Productionize DeFi page data and actions
+Thread: 73319
+Run: 20260227-065441-78451 (iteration 3)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-3.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-3.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: a92e72b feat(defi): add api-backed pools and safe intents
+- Post-commit status: `clean`
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: npm run dev -> FAIL (backend requires DATABASE_URL; expected from runtime validation)
+  - Command: DATABASE_URL="file:/Users/jonathan/APOM_PoC_1.02/.ralph/dev-defi-browser.db" npm run server -> PASS
+  - Command: dev-browser script against http://localhost:8081/defi (mocked `/api/defi/overview`) -> PASS
+- Files changed:
+  - server/app.js
+  - server/routes/defi.js
+  - src/contracts/index.ts
+  - src/contracts/defi.ts
+  - src/lib/defi-api.ts
+  - src/pages/DeFi.tsx
+  - tests/defi-routes.test.js
+  - .ralph/activity.log
+  - .ralph/progress.md
+- What was implemented
+  - Added production DeFi backend endpoints: `GET /api/defi/overview` with derived stats and pool action states, plus protected mutations `POST /api/defi/pools/:poolId/liquidity` and `POST /api/defi/pools/:poolId/stake`.
+  - Added payload validation, auth enforcement, and deterministic error handling for invalid pool IDs, invalid amounts, paused/retired pools, and unauthenticated mutation attempts.
+  - Replaced static `/defi` UI with API-backed rendering and required component states: loading skeletons, empty pools, mutation in-progress, and mutation error/success feedback.
+  - Added client-side auth/wallet gating + amount validation before mutation submission and login prompt messaging for blocked unauthenticated attempts.
+  - Added automated route tests for derived overview stats, authenticated liquidity intent success, unauthorized mutation blocking, and validation/pool-status negative paths.
+  - Performed browser verification on `/defi` with `dev-browser` and captured screenshot at `.codex/skills/dev-browser/tmp/defi-us011.png`.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - The gaming route implementation pattern generalized well: typed contracts + page-level query/mutation hooks + backend action-state derivation.
+  - Gotchas encountered
+  - Current CORS policy (`Access-Control-Allow-Origin: *`) conflicts with credentialed frontend requests (`withCredentials: true`) in real browsers; browser verification used API interception for this story scope.
+  - Useful context
+  - Runtime config fail-fast is functioning as intended: backend dev startup requires explicit `DATABASE_URL` for local validation.
+---
