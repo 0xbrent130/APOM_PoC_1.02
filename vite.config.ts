@@ -8,6 +8,12 @@ export default defineConfig(() => ({
     host: "::",
     port: 8080,
     allowedHosts: [".ngrok-free.app"],
+    proxy: {
+      "/api": {
+        target: process.env.VITE_DEV_API_PROXY_TARGET || "http://localhost:8000",
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [react()],
   resolve: {

@@ -1,6 +1,7 @@
 # Activity Log
 
 ## Run Summary
+- 2026-02-26 21:29:52 | run=20260226-205121-19705 | iter=7 | mode=build | story=US-007 | duration=481s | status=success
 - 2026-02-26 21:21:49 | run=20260226-205121-19705 | iter=6 | mode=build | story=US-006 | duration=303s | status=success
 - 2026-02-26 21:16:44 | run=20260226-205121-19705 | iter=5 | mode=build | story=US-005 | duration=323s | status=success
 - 2026-02-26 21:11:19 | run=20260226-205121-19705 | iter=4 | mode=build | story=US-004 | duration=333s | status=success
@@ -54,3 +55,9 @@
 [2026-02-26 21:28:24] Verified backend runtime smoke with DATABASE_URL+PORT override; server boots cleanly
 [2026-02-26 21:29:10] Updated progress log for US-007 with commit and verification details
 [2026-02-26 21:29:22] Committed US-007 implementation and progress updates; working tree clean
+[2026-02-26 21:29:52] ITERATION 7 end (duration=481s)
+[2026-02-26 21:29:54] ITERATION 8 start (mode=build story=US-008)
+[2026-02-26 21:30:19] US-008 iteration 8 start: auditing frontend API layer and typed state handling
+[2026-02-26 22:57:03] US-008 major code changes: added API base URL config, api client retry/error handling, auth state provider, shared query/mutation hooks, and 401 login prompt wiring
+[2026-02-26 22:57:36] US-008 verification: lint, test, typecheck, and build passed
+[2026-02-27 00:01:35] US-008 browser verification passed: unauthorized API response produced safe toast and redirected to login prompt state

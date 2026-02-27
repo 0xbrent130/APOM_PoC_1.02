@@ -3,11 +3,13 @@ import { Wallet, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "@/assets/logo.png";
+import { useAuthState } from "@/state/auth-state";
 
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { loginPrompt, dismissLoginPrompt } = useAuthState();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -159,6 +161,17 @@ const Header = () => {
               Connect Wallet
             </Button>
           </nav>
+        </div>
+      )}
+
+      {loginPrompt.isOpen && (
+        <div className="border-t border-border bg-background/90 backdrop-blur-md">
+          <div className="container mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-sm text-muted-foreground">{loginPrompt.message}</p>
+            <Button variant="outline" size="sm" onClick={dismissLoginPrompt}>
+              Dismiss
+            </Button>
+          </div>
         </div>
       )}
     </header>
