@@ -681,3 +681,43 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - Route-level auto-login prompts with `next` query behavior can interfere with deterministic flows; explicit in-test sign-in sequencing and scoped selectors avoids flaky modal interaction.
 ---
+## [2026-02-27 10:09:12 CST] - US-018: Security hardening and production middleware policies
+Thread: 
+Run: 20260227-065441-78451 (iteration 10)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-10.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-10.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 6e65598 security(api): harden production middleware policies
+- Post-commit status: `dirty` (.ralph/activity.log, .ralph/progress.md)
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: npm run security:audit -> FAIL
+  - Command: PORT=18080 DATABASE_URL='file:/tmp/us018-smoke.db' npm run server (8s smoke start) -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - package-lock.json
+  - package.json
+  - security.md
+  - server/app.js
+  - server/config.js
+  - tests/security-hardening.test.js
+  - .ralph/progress.md
+- What was implemented
+  - Installed and configured `helmet` and `express-rate-limit` middleware.
+  - Replaced wildcard CORS with explicit allowlist strategy (`CORS_ORIGINS`) and blocked disallowed origins with `403`.
+  - Added JSON/urlencoded request size limits via `REQUEST_BODY_LIMIT`.
+  - Added sensitive log redaction for contact payload logging.
+  - Added `npm run security:audit` and authored `security.md` dependency audit/playbook documentation.
+  - Added tests validating `429` rate limiting and disallowed-origin CORS blocking without sensitive data leakage.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - App import paths should avoid requiring DB-specific config for test contexts; split config parsing by concern.
+  - Gotchas encountered
+  - `timeout` is unavailable in this environment; use background start + `sleep` + `kill` for smoke checks.
+  - Useful context
+  - Existing dependency tree has unresolved high/critical advisories; `security:audit` currently fails and should be addressed in a dedicated dependency remediation story.
+---
