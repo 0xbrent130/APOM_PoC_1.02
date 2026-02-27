@@ -7,6 +7,14 @@ const runtimeEnvSchema = z.object({
     .optional()
     .default("development"),
   PORT: z.coerce.number().int().min(1).max(65535).optional().default(8000),
+  CORS_ORIGINS: z.string().optional().default(""),
+  REQUEST_BODY_LIMIT: z.string().optional().default("100kb"),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().min(1000).optional().default(15 * 60 * 1000),
+  RATE_LIMIT_MAX: z.coerce.number().int().min(1).optional().default(100),
+});
+
+const securityEnvSchema = runtimeEnvSchema.omit({
+  DATABASE_URL: true,
 });
 
 class ConfigValidationError extends Error {
@@ -18,8 +26,8 @@ class ConfigValidationError extends Error {
   }
 }
 
-function getRuntimeConfig(env = process.env) {
-  const parsed = runtimeEnvSchema.safeParse(env);
+function parseWithSchema(schema, env = process.env) {
+  const parsed = schema.safeParse(env);
 
   if (!parsed.success) {
     const details = parsed.error.issues.map((issue) => ({
@@ -32,7 +40,16 @@ function getRuntimeConfig(env = process.env) {
   return parsed.data;
 }
 
+function getRuntimeConfig(env = process.env) {
+  return parseWithSchema(runtimeEnvSchema, env);
+}
+
+function getSecurityRuntimeConfig(env = process.env) {
+  return parseWithSchema(securityEnvSchema, env);
+}
+
 module.exports = {
   ConfigValidationError,
   getRuntimeConfig,
+  getSecurityRuntimeConfig,
 };
