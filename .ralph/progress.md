@@ -440,3 +440,45 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - Runtime config fail-fast is functioning as intended: backend dev startup requires explicit `DATABASE_URL` for local validation.
 ---
+## [2026-02-27 08:28:39 CST] - US-012: Productionize NFT Marketplace page data and actions
+Thread: 34687
+Run: 20260227-065441-78451 (iteration 4)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-4.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-4.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 3337288 feat(nft-marketplace): productionize data actions
+- Post-commit status: clean
+- Verification:
+  - Command: npm run lint -> PASS
+  - Command: npm run test -> PASS
+  - Command: npm run typecheck -> PASS
+  - Command: npm run build -> PASS
+  - Command: DATABASE_URL='file:./.ralph/dev-nft-marketplace.db' VITE_API_BASE_URL='/api' npm run dev -> PASS
+  - Command: dev-browser script (navigate /nft-marketplace, auth via /api/auth, click Buy Now, assert Purchase complete + Owned) -> PASS
+- Files changed:
+  - server/app.js
+  - server/routes/nftMarketplace.js
+  - src/contracts/index.ts
+  - src/contracts/nft-marketplace.ts
+  - src/lib/nft-marketplace-api.ts
+  - src/pages/NFTMarketplace.tsx
+  - tests/nft-marketplace-routes.test.js
+- What was implemented
+  - Added new `/api/nft-marketplace` backend router with API overview payload, authenticated buy flow, and authenticated list flow.
+  - Added strict payload validation and unavailable-asset conflict behavior for buys (`ASSET_UNAVAILABLE`, HTTP 409).
+  - Wired backend route into server app.
+  - Added NFT marketplace frontend contracts and API client module.
+  - Replaced static `/nft-marketplace` page with API-backed collections/assets/stats and mutation-driven buy/list actions.
+  - Implemented required UI states: loading, empty inventory, purchase pending, purchase failed, purchase complete.
+  - Implemented card state transition behavior where purchased NFT updates to sold/owned in UI.
+  - Added integration tests for overview, successful buy, unavailable buy conflict, and auth/validation/list flows.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Existing productionized pages use `useApiQuery` + `useApiMutation` with typed contracts and server normalization helpers; mirroring this pattern kept behavior consistent.
+  - Gotchas encountered
+  - The dev workflow requires explicitly setting `DATABASE_URL`; without it backend exits during `npm run dev`.
+  - The `ralph log` helper path in prompt was not directly executable in this workspace; `.agents/ralph/log-activity.sh` is the reliable fallback.
+  - Useful context
+  - Browser validation can run reliably with `VITE_API_BASE_URL='/api'` so Vite proxy handles API requests in local dev.
+---
