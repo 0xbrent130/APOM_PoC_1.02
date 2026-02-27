@@ -771,3 +771,40 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - Current production schema is SQLite-based, so the compose `db` service is implemented as persistent shared volume management for deterministic backup/restore behavior.
 ---
+## [2026-02-27 18:07:24 UTC] - US-020: Execute production UAT and release checklist
+Thread: 019ca045-0b3b-7832-a4bc-1ce127c4d346
+Run: 20260227-065441-78451 (iteration 12)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-12.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-12.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 1b6a4a0 docs(release): add production UAT checklist artifacts
+- Post-commit status: `clean`
+- Verification:
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run test` -> PASS
+  - Command: `npm run typecheck` -> PASS
+  - Command: `npm run build` -> PASS
+  - Command: `npm run test:e2e` -> PASS
+  - Command: `npm run dev` -> FAIL (missing `DATABASE_URL` in default env)
+  - Command: `DATABASE_URL='file:./dev.db' AUTH_JWT_SECRET='dev-secret' npm run dev` -> PASS
+- Files changed:
+  - .ralph/activity.log
+  - ops/runbooks/release-uat-checklist.md
+  - ops/release-artifacts/2026-02-27-us-020/release-report.md
+  - ops/release-artifacts/2026-02-27-us-020/release-notes.md
+  - .ralph/progress.md
+- What was implemented
+  - Added a production UAT runbook with a six-route matrix covering guest/email/wallet auth states, critical mutations, explicit negative-case blockers, go/no-go criteria, rollback procedure, and post-launch monitoring checkpoints.
+  - Added a dated release report artifact that records UAT outcome, quality gate evidence locations, rollback readiness references, and signoff requirements.
+  - Added approved release notes artifact linked in signoff criteria.
+  - Captured command outputs for quality gates, e2e smoke, and dev startup validation in release artifact logs.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - The release control story is best satisfied by pairing a reusable checklist runbook with a dated execution report artifact.
+  - Gotchas encountered
+  - The prompt path `/Users/jonathan/APOM_PoC_1.02/ralph log` is not executable directly; `ralph log "..."` on PATH works reliably.
+  - `npm run dev` needs explicit runtime env (`DATABASE_URL`) in this workspace; capture both failing default and passing configured startup for audit clarity.
+  - Useful context
+  - Existing backend/frontend route and mutation coverage in `tests/*routes.test.js` and `e2e/smoke.spec.ts` maps directly into the UAT matrix evidence column.
+---
