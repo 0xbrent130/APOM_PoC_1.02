@@ -81,7 +81,7 @@ const Header = () => {
 
         {/* Session Actions */}
         <div className="flex items-center space-x-4">
-          <div className="hidden lg:flex items-center gap-2 text-xs">
+          <div className="hidden md:flex items-center gap-2 text-xs">
             <span className="rounded-full border border-border px-2 py-1 text-muted-foreground">
               Auth: {authStatusLabel}
             </span>
