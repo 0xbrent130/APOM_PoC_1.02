@@ -721,3 +721,53 @@ Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451
   - Useful context
   - Existing dependency tree has unresolved high/critical advisories; `security:audit` currently fails and should be addressed in a dedicated dependency remediation story.
 ---
+## [2026-02-27 12:02:48 CST] - US-019: Ship VPS deployment stack with Docker Compose and operational readiness
+Thread: 
+Run: 20260227-065441-78451 (iteration 11)
+Run log: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-11.log
+Run summary: /Users/jonathan/APOM_PoC_1.02/.ralph/runs/run-20260227-065441-78451-iter-11.md
+- Guardrails reviewed: yes
+- No-commit run: false
+- Commit: 4f09ff7 feat(deploy): add VPS compose ops stack
+- Post-commit status: `clean`
+- Verification:
+  - Command: `npm run lint` -> PASS
+  - Command: `npm run test` -> PASS
+  - Command: `npm run typecheck` -> PASS
+  - Command: `npm run build` -> PASS
+  - Command: `docker compose -f docker-compose.yml config` -> FAIL (docker CLI unavailable in environment)
+  - Command: `npm run dev` -> FAIL (expected fail-fast without DATABASE_URL)
+  - Command: `DATABASE_URL='file:./prisma/dev.db' npm run dev` -> PASS
+- Files changed:
+  - .dockerignore
+  - .env.compose.example
+  - .env.example
+  - AGENTS.md
+  - Dockerfile.backend
+  - Dockerfile.frontend
+  - docker-compose.yml
+  - ops/deploy.sh
+  - ops/smoke-check.sh
+  - ops/nginx/frontend.conf
+  - ops/nginx/reverse-proxy.conf
+  - ops/runbooks/backup-restore.md
+  - ops/runbooks/deploy.md
+  - server/app.js
+  - server/config.js
+  - server/uptimeMonitor.js
+  - tests/operations-observability.test.js
+  - .ralph/activity.log
+- What was implemented
+- Added deterministic VPS deployment artifacts: backend/frontend Dockerfiles, compose stack (`db`, `backend`, `frontend`, `reverse-proxy`) with restart policies and container health checks.
+- Added migration-gated deploy workflow (`ops/deploy.sh`) so migrations run before service replacement; on migration failure deployment exits and currently serving containers are left unchanged.
+- Added operational environment templates for local/compose production usage and documented run/build/test/deploy commands in `AGENTS.md`.
+- Added deployment and backup/restore runbooks with explicit smoke-check procedure covering six product routes plus `/health/live` and `/health/ready`.
+- Implemented structured JSON request/startup logs and a configurable uptime monitoring ping hook (`UPTIME_PING_URL`, `UPTIME_PING_INTERVAL_MS`) with test coverage.
+- **Learnings for future iterations:**
+  - Patterns discovered
+  - Migration-first deployment gate is the safest low-complexity guard against failed rollouts when using single-host Compose.
+  - Gotchas encountered
+  - `docker` and `timeout` binaries are not available in this execution environment; runtime compose validation must run on a Docker-enabled host.
+  - Useful context
+  - Current production schema is SQLite-based, so the compose `db` service is implemented as persistent shared volume management for deterministic backup/restore behavior.
+---
