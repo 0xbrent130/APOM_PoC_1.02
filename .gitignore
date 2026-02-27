@@ -25,3 +25,7 @@ dist-ssr
 .agents/
 captures/
 .codex/
+
+# Ralph artifacts
+.ralph/
+.ralph*
