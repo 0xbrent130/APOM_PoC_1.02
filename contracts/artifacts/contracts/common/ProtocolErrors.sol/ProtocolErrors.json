@@ -1,0 +1,71 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ProtocolErrors",
+  "sourceName": "contracts/common/ProtocolErrors.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "AlreadyExists",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "EscrowExpired",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAddress",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAmount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidDeadline",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidPaymentToken",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidStatus",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotEscrowParty",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotFound",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ProductInactive",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TransferFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "Unauthorized",
+      "type": "error"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
